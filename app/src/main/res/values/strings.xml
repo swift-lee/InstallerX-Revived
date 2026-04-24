@@ -11,6 +11,12 @@
     <string name="open_source_license_settings_description">View third-party open-source libraries and their licenses</string>
     <string name="back">Back</string>
     <string name="home">Home</string>
+    <string name="inactivate">Inactivate</string>
+    <string name="activate">Activate</string>
+    <string name="activate_mode">Activate mode: %s</string>
+    <string name="shizuku_working_mode">Shizuku working mode: %s</string>
+    <string name="shizuku_not_authorized">Please grant permission to access Sui or Shizuku</string>
+    <string name="shizuku_not_available">Please activate Sui or Shizuku</string>
     <string name="config">Profiles</string>
     <string name="app">App</string>
     <string name="preferred">Preferences</string>

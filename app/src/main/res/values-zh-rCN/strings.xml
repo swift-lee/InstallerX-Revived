@@ -9,6 +9,12 @@
     <string name="open_source_license_settings_description">查看本应用所使用的第三方开源库及其许可证信息</string>
     <string name="back">返回</string>
     <string name="home">主页</string>
+    <string name="inactivate">未激活</string>
+    <string name="activate">已激活</string>
+    <string name="activate_mode">激活方式: %s</string>
+    <string name="shizuku_working_mode">Shizuku 工作模式: %s</string>
+    <string name="shizuku_not_authorized">请授予本应用访问 Sui 或 Shizuku 的权限</string>
+    <string name="shizuku_not_available">请激活 Sui 或 Shizuku</string>
     <string name="config">配置</string>
     <string name="app">应用</string>
     <string name="preferred">设置</string>

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2023-2026 iamr0s, InstallerX Revived contributors
-package com.rosan.installer.ui.page.main.settings.main
+package com.rosan.installer.ui.navigation
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -20,6 +21,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Home
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBarDefaults
@@ -62,6 +65,7 @@ import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.page.main.settings.SettingsSharedViewModel
 import com.rosan.installer.ui.page.main.settings.config.all.AllPage
 import com.rosan.installer.ui.page.main.settings.config.all.NewAllPage
+import com.rosan.installer.ui.page.main.settings.config.home.HomePage
 import com.rosan.installer.ui.page.main.settings.preferred.NewPreferredPage
 import com.rosan.installer.ui.page.main.settings.preferred.PreferredPage
 import com.rosan.installer.ui.theme.LocalWindowLayoutInfo
@@ -94,11 +98,18 @@ fun MainPage(
     val configRepo = koinInject<ConfigRepository>()
     val configCountFlow = remember { configRepo.flowAll().map { it.size } }
     val configCount by configCountFlow.collectAsStateWithLifecycle(initialValue = 0)
+    val homeLabel = stringResource(id = R.string.home)
     val configLabel = stringResource(R.string.config)
     val preferredLabel = stringResource(R.string.preferred)
 
     val data = remember(showExpressiveUI, configLabel, preferredLabel) {
         arrayOf(
+            NavigationData(
+                icon = Icons.TwoTone.Home,
+                label = homeLabel
+            ) { outerPadding ->
+                HomePage(useBlur = useBlur, outerPadding = outerPadding)
+            },
             NavigationData(
                 icon = AppIcons.RoomPreferences,
                 label = configLabel
@@ -230,11 +241,11 @@ fun RowNavigation(
                     onClick = { onPageChanged(index) },
                     iconPosition = if (isMedium) NavigationItemIconPosition.Start else NavigationItemIconPosition.Top,
                     icon = {
-                        val showBadge = index == 0 && configCount > 1
+                        val showBadge = index == 1 && configCount > 1
 
                         BadgedBox(
                             badge = {
-                                androidx.compose.animation.AnimatedVisibility(
+                                AnimatedVisibility(
                                     visible = showBadge,
                                     enter = scaleIn() + fadeIn(),
                                     exit = scaleOut() + fadeOut(),
@@ -279,17 +290,10 @@ fun RowNavigation(
 
                             BadgedBox(
                                 badge = {
-                                    androidx.compose.animation.AnimatedVisibility(
-                                        visible = showBadge,
-                                        enter = scaleIn() + fadeIn(),
-                                        exit = scaleOut() + fadeOut(),
-                                        label = "badge"
-                                    ) {
-                                        Badge(
-                                            containerColor = MaterialTheme.colorScheme.secondary,
-                                            contentColor = MaterialTheme.colorScheme.onSecondary
-                                        ) { Text(configCount.toString()) }
-                                    }
+                                    ConfigBadge(
+                                        showBadge = showBadge,
+                                        configCount = configCount
+                                    )
                                 }
                             ) {
                                 Icon(
@@ -374,6 +378,25 @@ fun ColumnNavigation(
                     Text(text = navigationData.label)
                 }
             )
+        }
+    }
+}
+
+// Extract the badge into a separate Composable function
+// This removes it from the RowScope context, solving the scope ambiguity
+@Composable
+private fun ConfigBadge(showBadge: Boolean, configCount: Int) {
+    AnimatedVisibility(
+        visible = showBadge,
+        enter = scaleIn() + fadeIn(),
+        exit = scaleOut() + fadeOut(),
+        label = "badge"
+    ) {
+        Badge(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary
+        ) {
+            Text(configCount.toString())
         }
     }
 }

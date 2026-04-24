@@ -36,7 +36,6 @@ import com.rosan.installer.ui.page.main.settings.config.apply.ApplyPage
 import com.rosan.installer.ui.page.main.settings.config.apply.NewApplyPage
 import com.rosan.installer.ui.page.main.settings.config.edit.EditPage
 import com.rosan.installer.ui.page.main.settings.config.edit.NewEditPage
-import com.rosan.installer.ui.page.main.settings.main.MainPage
 import com.rosan.installer.ui.page.main.settings.preferred.about.AboutPage
 import com.rosan.installer.ui.page.main.settings.preferred.about.NewAboutPage
 import com.rosan.installer.ui.page.main.settings.preferred.about.OpenSourceLicensePage
