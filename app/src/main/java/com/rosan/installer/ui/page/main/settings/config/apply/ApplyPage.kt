@@ -95,7 +95,6 @@ import com.rosan.installer.ui.navigation.LocalNavigator
 import com.rosan.installer.ui.page.main.widget.chip.Chip
 import com.rosan.installer.ui.page.main.widget.setting.AppBackButton
 import com.rosan.installer.ui.page.main.widget.setting.LabelWidget
-import com.rosan.installer.ui.theme.none
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -125,7 +124,6 @@ fun ApplyPage(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             var searchBarActivated by remember { mutableStateOf(false) }
             TopAppBar(

@@ -67,7 +67,6 @@ import com.rosan.installer.ui.page.main.widget.setting.BaseWidget
 import com.rosan.installer.ui.page.main.widget.setting.LabelWidget
 import com.rosan.installer.ui.page.main.widget.setting.SwitchWidget
 import com.rosan.installer.ui.theme.material.ThemeMode
-import com.rosan.installer.ui.theme.none
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("RestrictedApi")
@@ -155,7 +154,6 @@ fun LegacyThemeSettingsPage(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.theme_settings)) },

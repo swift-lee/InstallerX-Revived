@@ -80,7 +80,7 @@ private fun SettingsFloatingBottomBar(
     pagerState: PagerState,
     navigationItems: List<NavigationItem>,
     useFloatingBottomBarBlur: Boolean,
-    floatingBackdrop: KyantLayerBackdrop // 悬浮底栏依然使用 Kyant 的
+    floatingBackdrop: KyantLayerBackdrop
 ) {
     val coroutineScope = rememberCoroutineScope()
     Box(
@@ -147,8 +147,8 @@ fun SettingsCompactLayout(
     snackbarHostState: SnackbarHostState,
     useFloatingBottomBar: Boolean,
     useFloatingBottomBarBlur: Boolean,
-    floatingBackdrop: KyantLayerBackdrop?, // 接收 Kyant 类型
-    miuixBackdrop: MiuixLayerBackdrop?     // 接收 Miuix 类型
+    floatingBackdrop: KyantLayerBackdrop?,
+    miuixBackdrop: MiuixLayerBackdrop?
 ) {
     val navigator = LocalNavigator.current
     val coroutineScope = rememberCoroutineScope()
@@ -164,7 +164,6 @@ fun SettingsCompactLayout(
                     floatingBackdrop = floatingBackdrop
                 )
             } else if (!useFloatingBottomBar) {
-                // 原生底栏使用 Miuix 的 Backdrop 和 Blur
                 val blurActive = miuixBackdrop != null
                 val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
                 Box(
@@ -252,8 +251,8 @@ fun SettingsWideScreenLayout(
     snackbarHostState: SnackbarHostState,
     useFloatingBottomBar: Boolean,
     useFloatingBottomBarBlur: Boolean,
-    floatingBackdrop: KyantLayerBackdrop?, // 接收 Kyant 类型
-    miuixBackdrop: MiuixLayerBackdrop?     // 接收 Miuix 类型
+    floatingBackdrop: KyantLayerBackdrop?,
+    miuixBackdrop: MiuixLayerBackdrop?
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -276,7 +275,6 @@ fun SettingsWideScreenLayout(
                 .fillMaxSize()
                 .background(MiuixTheme.colorScheme.surface)
         ) {
-            // 侧边栏始终使用 Miuix 原生的模糊和 Backdrop
             val blurActive = miuixBackdrop != null
             val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
             Box(

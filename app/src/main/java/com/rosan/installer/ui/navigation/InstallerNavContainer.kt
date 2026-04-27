@@ -3,6 +3,8 @@
 package com.rosan.installer.ui.navigation
 
 import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -32,6 +34,7 @@ import com.rosan.installer.ui.animation.predictiveback.KernelSUClassicPredictive
 import com.rosan.installer.ui.animation.predictiveback.MiuixPredictiveBackAnimation
 import com.rosan.installer.ui.animation.predictiveback.NoPredictiveBackAnimation
 import com.rosan.installer.ui.animation.predictiveback.ScalePredictiveBackAnimation
+import com.rosan.installer.ui.page.main.settings.SettingsSharedViewModel
 import com.rosan.installer.ui.page.main.settings.config.apply.ApplyPage
 import com.rosan.installer.ui.page.main.settings.config.apply.NewApplyPage
 import com.rosan.installer.ui.page.main.settings.config.edit.EditPage
@@ -63,11 +66,14 @@ import com.rosan.installer.ui.page.miuix.settings.preferred.lab.MiuixLabPage
 import com.rosan.installer.ui.page.miuix.settings.preferred.theme.MiuixThemeSettingsPage
 import com.rosan.installer.ui.page.miuix.settings.preferred.uninstaller.MiuixUninstallerGlobalSettingsPage
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun InstallerNavContainer(
-    uiState: ThemeState
-) {
+fun InstallerNavContainer(uiState: ThemeState) {
+    val sharedViewModel: SettingsSharedViewModel = koinViewModel(
+        viewModelStoreOwner = LocalActivity.current as ComponentActivity
+    )
+
     val predictiveBackAnimationHandler = remember(uiState.predictiveBackAnimation, uiState.predictiveBackExitDirection) {
         when (uiState.predictiveBackAnimation) {
             PredictiveBackAnimation.None -> NoPredictiveBackAnimation()
@@ -132,9 +138,9 @@ fun InstallerNavContainer(
                 entryProvider = entryProvider {
                     entry<Route.Main> {
                         if (uiState.useMiuix) {
-                            MiuixMainPageWrapper(uiState)
+                            MiuixMainPageWrapper(uiState, sharedViewModel)
                         } else {
-                            MainPage(uiState)
+                            Material3MainPageWrapper(uiState, sharedViewModel)
                         }
                     }
                     entry<Route.EditConfig> { key ->

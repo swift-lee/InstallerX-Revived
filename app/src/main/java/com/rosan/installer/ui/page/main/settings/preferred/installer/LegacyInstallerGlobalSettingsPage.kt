@@ -53,7 +53,6 @@ import com.rosan.installer.ui.page.main.widget.setting.AppBackButton
 import com.rosan.installer.ui.page.main.widget.setting.IntNumberPickerWidget
 import com.rosan.installer.ui.page.main.widget.setting.LabelWidget
 import com.rosan.installer.ui.page.main.widget.setting.SwitchWidget
-import com.rosan.installer.ui.theme.none
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -73,7 +72,6 @@ fun LegacyInstallerGlobalSettingsPage(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.installer_settings)) },

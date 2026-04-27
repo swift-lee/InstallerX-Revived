@@ -2,8 +2,6 @@
 // Copyright (C) 2023-2026 iamr0s, InstallerX Revived contributors
 package com.rosan.installer.ui.navigation
 
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -65,7 +63,8 @@ import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.page.main.settings.SettingsSharedViewModel
 import com.rosan.installer.ui.page.main.settings.config.all.AllPage
 import com.rosan.installer.ui.page.main.settings.config.all.NewAllPage
-import com.rosan.installer.ui.page.main.settings.config.home.HomePage
+import com.rosan.installer.ui.page.main.settings.home.HomePage
+import com.rosan.installer.ui.page.main.settings.home.NewHomePage
 import com.rosan.installer.ui.page.main.settings.preferred.NewPreferredPage
 import com.rosan.installer.ui.page.main.settings.preferred.PreferredPage
 import com.rosan.installer.ui.theme.LocalWindowLayoutInfo
@@ -73,21 +72,19 @@ import com.rosan.installer.ui.theme.installerMaterial3BlurEffect
 import com.rosan.installer.ui.theme.rememberMaterial3BlurBackdrop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 
-data class NavigationData(
+data class NavigationTab(
     val icon: ImageVector,
-    val label: String,
-    val content: @Composable (PaddingValues) -> Unit
+    val label: String
 )
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun MainPage(
+fun Material3MainPageWrapper(
     uiState: ThemeState,
-    sharedViewModel: SettingsSharedViewModel = koinViewModel(viewModelStoreOwner = LocalActivity.current as ComponentActivity)
+    sharedViewModel: SettingsSharedViewModel
 ) {
     val scope = rememberCoroutineScope()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
@@ -102,40 +99,26 @@ fun MainPage(
     val configLabel = stringResource(R.string.config)
     val preferredLabel = stringResource(R.string.preferred)
 
-    val data = remember(showExpressiveUI, configLabel, preferredLabel) {
-        arrayOf(
-            NavigationData(
+    val tabs = remember(homeLabel, configLabel, preferredLabel) {
+        listOf(
+            NavigationTab(
                 icon = Icons.TwoTone.Home,
                 label = homeLabel
-            ) { outerPadding ->
-                HomePage(useBlur = useBlur, outerPadding = outerPadding)
-            },
-            NavigationData(
+            ),
+            NavigationTab(
                 icon = AppIcons.RoomPreferences,
                 label = configLabel
-            ) { outerPadding ->
-                if (showExpressiveUI) NewAllPage(
-                    useBlur = useBlur,
-                    outerPadding = outerPadding
-                )
-                else AllPage(outerPadding = outerPadding)
-            },
-            NavigationData(
+            ),
+            NavigationTab(
                 icon = AppIcons.SettingsSuggest,
                 label = preferredLabel
-            ) { outerPadding ->
-                if (showExpressiveUI) NewPreferredPage(
-                    useBlur = useBlur,
-                    outerPadding = outerPadding
-                )
-                else PreferredPage(outerPadding = outerPadding)
-            }
+            )
         )
     }
 
     val pagerState = rememberPagerState(
         initialPage = sharedState.lastMainPageIndex,
-        pageCount = { data.size }
+        pageCount = { tabs.size }
     )
     val currentPage = pagerState.currentPage
     LaunchedEffect(currentPage) {
@@ -170,7 +153,7 @@ fun MainPage(
                     modifier = Modifier.installerMaterial3BlurEffect(backdrop),
                     isM3e = showExpressiveUI,
                     windowInsets = navigationWindowInsets,
-                    data = data,
+                    tabs = tabs,
                     currentPage = currentPage,
                     onPageChanged = { onPageChanged(it) },
                     configCount = configCount,
@@ -186,7 +169,26 @@ fun MainPage(
                     .fillMaxSize()
                     .then(backdrop?.let { Modifier.layerBackdrop(backdrop) } ?: Modifier)
             ) { page ->
-                data[page].content(paddingValues)
+                // Delegate page content rendering based on the current page index
+                when (page) {
+                    0 -> if (showExpressiveUI) {
+                        NewHomePage(useBlur = useBlur, outerPadding = paddingValues)
+                    } else {
+                        HomePage(outerPadding = paddingValues)
+                    }
+
+                    1 -> if (showExpressiveUI) {
+                        NewAllPage(useBlur = useBlur, outerPadding = paddingValues)
+                    } else {
+                        AllPage(outerPadding = paddingValues)
+                    }
+
+                    2 -> if (showExpressiveUI) {
+                        NewPreferredPage(useBlur = useBlur, outerPadding = paddingValues)
+                    } else {
+                        PreferredPage(outerPadding = paddingValues)
+                    }
+                }
             }
         }
     } else {
@@ -194,7 +196,7 @@ fun MainPage(
             ColumnNavigation(
                 isM3e = showExpressiveUI,
                 windowInsets = navigationWindowInsets,
-                data = data,
+                tabs = tabs,
                 currentPage = currentPage,
                 onPageChanged = { onPageChanged(it) }
             )
@@ -207,7 +209,29 @@ fun MainPage(
                     .fillMaxSize()
                     .then(backdrop?.let { Modifier.layerBackdrop(backdrop) } ?: Modifier)
             ) { page ->
-                data[page].content(PaddingValues(0.dp))
+                // Rail navigation doesn't overlay bottom content, so use zero padding
+                val paddingValues = PaddingValues(0.dp)
+
+                // Delegate page content rendering based on the current page index
+                when (page) {
+                    0 -> if (showExpressiveUI) {
+                        NewHomePage(useBlur = useBlur, outerPadding = paddingValues)
+                    } else {
+                        HomePage(outerPadding = paddingValues)
+                    }
+
+                    1 -> if (showExpressiveUI) {
+                        NewAllPage(useBlur = useBlur, outerPadding = paddingValues)
+                    } else {
+                        AllPage(outerPadding = paddingValues)
+                    }
+
+                    2 -> if (showExpressiveUI) {
+                        NewPreferredPage(useBlur = useBlur, outerPadding = paddingValues)
+                    } else {
+                        PreferredPage(outerPadding = paddingValues)
+                    }
+                }
             }
         }
     }
@@ -219,7 +243,7 @@ fun RowNavigation(
     modifier: Modifier = Modifier,
     isM3e: Boolean,
     windowInsets: WindowInsets,
-    data: Array<NavigationData>,
+    tabs: List<NavigationTab>,
     currentPage: Int,
     onPageChanged: (Int) -> Unit,
     configCount: Int,
@@ -235,7 +259,7 @@ fun RowNavigation(
             containerColor = containerColor,
             arrangement = if (isMedium) ShortNavigationBarArrangement.Centered else ShortNavigationBarArrangement.EqualWeight
         ) {
-            data.forEachIndexed { index, navigationData ->
+            tabs.forEachIndexed { index, navigationData ->
                 ShortNavigationBarItem(
                     selected = currentPage == index,
                     onClick = { onPageChanged(index) },
@@ -281,12 +305,12 @@ fun RowNavigation(
             containerColor = containerColor,
             horizontalArrangement = BottomAppBarDefaults.FlexibleHorizontalArrangement,
             content = {
-                data.forEachIndexed { index, navigationData ->
+                tabs.forEachIndexed { index, navigationTab ->
                     NavigationBarItem(
                         selected = currentPage == index,
                         onClick = { onPageChanged(index) },
                         icon = {
-                            val showBadge = index == 0 && configCount > 1
+                            val showBadge = index == 1 && configCount > 1
 
                             BadgedBox(
                                 badge = {
@@ -297,13 +321,13 @@ fun RowNavigation(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = navigationData.icon,
-                                    contentDescription = navigationData.label
+                                    imageVector = navigationTab.icon,
+                                    contentDescription = navigationTab.label
                                 )
                             }
                         },
                         label = {
-                            Text(text = navigationData.label)
+                            Text(text = navigationTab.label)
                         },
                         alwaysShowLabel = false
                     )
@@ -317,7 +341,7 @@ fun RowNavigation(
 fun ColumnNavigation(
     isM3e: Boolean,
     windowInsets: WindowInsets,
-    data: Array<NavigationData>,
+    tabs: List<NavigationTab>,
     currentPage: Int,
     onPageChanged: (Int) -> Unit
 ) {
@@ -363,19 +387,19 @@ fun ColumnNavigation(
             }
         }
     ) {
-        data.forEachIndexed { index, navigationData ->
+        tabs.forEachIndexed { index, navigationTab ->
             WideNavigationRailItem(
                 railExpanded = state.targetValue == WideNavigationRailValue.Expanded,
                 selected = currentPage == index,
                 onClick = { onPageChanged(index) },
                 icon = {
                     Icon(
-                        imageVector = navigationData.icon,
-                        contentDescription = navigationData.label
+                        imageVector = navigationTab.icon,
+                        contentDescription = navigationTab.label
                     )
                 },
                 label = {
-                    Text(text = navigationData.label)
+                    Text(text = navigationTab.label)
                 }
             )
         }

@@ -44,7 +44,6 @@ import com.rosan.installer.ui.page.main.widget.card.InfoTipCard
 import com.rosan.installer.ui.page.main.widget.dialog.UninstallPackageDialog
 import com.rosan.installer.ui.page.main.widget.setting.AppBackButton
 import com.rosan.installer.ui.page.main.widget.setting.LabelWidget
-import com.rosan.installer.ui.theme.none
 import com.rosan.installer.util.toast
 import org.koin.androidx.compose.koinViewModel
 
@@ -83,7 +82,6 @@ fun LegacyUninstallerGlobalSettingsPage(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.uninstaller_settings)) },

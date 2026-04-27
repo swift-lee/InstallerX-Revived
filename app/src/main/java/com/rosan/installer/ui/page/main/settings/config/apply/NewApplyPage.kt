@@ -102,7 +102,6 @@ import com.rosan.installer.ui.theme.bottomShape
 import com.rosan.installer.ui.theme.getMaterial3AppBarColor
 import com.rosan.installer.ui.theme.installerMaterial3BlurEffect
 import com.rosan.installer.ui.theme.middleShape
-import com.rosan.installer.ui.theme.none
 import com.rosan.installer.ui.theme.rememberMaterial3BlurBackdrop
 import com.rosan.installer.ui.theme.singleShape
 import com.rosan.installer.ui.theme.topShape
@@ -139,7 +138,6 @@ fun NewApplyPage(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.none,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             var searchBarActivated by remember { mutableStateOf(false) }

@@ -49,7 +49,6 @@ import com.rosan.installer.ui.page.main.widget.setting.AppBackButton
 import com.rosan.installer.ui.page.main.widget.setting.LabelWidget
 import com.rosan.installer.ui.page.main.widget.snackbar.SwipeableSnackbarHost
 import com.rosan.installer.ui.page.main.widget.util.EditEventCollector
-import com.rosan.installer.ui.theme.none
 import com.rosan.installer.ui.util.isNoneActive
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -102,7 +101,6 @@ fun EditPage(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,

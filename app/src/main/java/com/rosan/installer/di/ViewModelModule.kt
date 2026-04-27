@@ -8,7 +8,7 @@ import com.rosan.installer.ui.page.main.settings.SettingsSharedViewModel
 import com.rosan.installer.ui.page.main.settings.config.all.AllViewModel
 import com.rosan.installer.ui.page.main.settings.config.apply.ApplyViewModel
 import com.rosan.installer.ui.page.main.settings.config.edit.EditViewModel
-import com.rosan.installer.ui.page.main.settings.config.home.HomePageViewModel
+import com.rosan.installer.ui.page.main.settings.home.HomePageViewModel
 import com.rosan.installer.ui.page.main.settings.preferred.PreferredViewModel
 import com.rosan.installer.ui.page.main.settings.preferred.about.AboutViewModel
 import com.rosan.installer.ui.page.main.settings.preferred.installer.InstallerSettingsViewModel

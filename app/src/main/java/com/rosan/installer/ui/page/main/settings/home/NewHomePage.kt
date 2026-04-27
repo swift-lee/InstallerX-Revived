@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 InstallerX Revived contributors
-package com.rosan.installer.ui.page.main.settings.config.home
+package com.rosan.installer.ui.page.main.settings.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,12 +10,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -32,7 +33,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
 import com.rosan.installer.domain.device.model.ShizukuMode
 import com.rosan.installer.domain.device.provider.DeviceCapabilityProvider
@@ -60,12 +61,12 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomePage(
-    outerPadding: PaddingValues,
+fun NewHomePage(
     useBlur: Boolean,
-    viewModel: HomePageViewModel = koinViewModel()
+    viewModel: HomePageViewModel = koinViewModel(),
+    outerPadding: PaddingValues
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val layoutDirection = LocalLayoutDirection.current
     val horizontalSafeInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -76,64 +77,48 @@ fun HomePage(
     }
 
     Scaffold(
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
-            if (state.style == UiStyle.Material) {
-                TopAppBar(
-                    title = {
-                        Text(text = stringResource(id = R.string.home))
-                    },
-                    scrollBehavior = scrollBehavior,
+            LargeFlexibleTopAppBar(
+                modifier = Modifier.installerMaterial3BlurEffect(backdrop),
+                windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
+                title = { Text(text = stringResource(id = R.string.home)) },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = backdrop.getMaterial3AppBarColor(),
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    scrolledContainerColor = backdrop.getMaterial3AppBarColor()
                 )
-            } else {
-                LargeFlexibleTopAppBar(
-                    modifier = Modifier.installerMaterial3BlurEffect(backdrop),
-                    title = {
-                        Text(text = stringResource(id = R.string.home))
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = backdrop.getMaterial3AppBarColor(),
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        scrolledContainerColor = backdrop.getMaterial3AppBarColor()
-                    ),
-                    scrollBehavior = scrollBehavior,
-                )
-            }
-        },
-        containerColor =
-            if (state.style == UiStyle.MaterialExpressive)
-                MaterialTheme.colorScheme.surfaceContainer
-            else
-                MaterialTheme.colorScheme.surface
-    ) { innerPadding ->
+            )
+        }
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .then(backdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .then(backdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier),
             contentPadding = PaddingValues(
                 start = 16.dp + horizontalSafeInsets.calculateStartPadding(layoutDirection),
-                end = 16.dp + horizontalSafeInsets.calculateEndPadding(layoutDirection)
+                top = paddingValues.calculateTopPadding() + 16.dp,
+                end = 16.dp + horizontalSafeInsets.calculateEndPadding(layoutDirection),
+                bottom = outerPadding.calculateBottomPadding()
             )
         ) {
             item {
-                Spacer(modifier = Modifier.height(innerPadding.calculateTopPadding() + outerPadding.calculateTopPadding()))
-            }
-
-            item {
-                if (state.activate) {
+                if (uiState.activate) {
                     ActivateStatusCard(
-                        state = state,
+                        state = uiState,
                     )
                 } else {
                     InActivateStatusCard(
-                        state = state,
+                        state = uiState,
                     )
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding() + outerPadding.calculateBottomPadding()))
-            }
+            item { Spacer(Modifier.navigationBarsPadding()) }
         }
     }
 }

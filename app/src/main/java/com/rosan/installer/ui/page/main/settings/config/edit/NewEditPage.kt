@@ -63,7 +63,6 @@ import com.rosan.installer.ui.page.main.widget.snackbar.SwipeableSnackbarHost
 import com.rosan.installer.ui.page.main.widget.util.EditEventCollector
 import com.rosan.installer.ui.theme.getMaterial3AppBarColor
 import com.rosan.installer.ui.theme.installerMaterial3BlurEffect
-import com.rosan.installer.ui.theme.none
 import com.rosan.installer.ui.theme.rememberMaterial3BlurBackdrop
 import com.rosan.installer.ui.util.isNoneActive
 import org.koin.androidx.compose.koinViewModel
@@ -132,7 +131,6 @@ fun NewEditPage(
                 focusManager.clearFocus()
             },
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             LargeFlexibleTopAppBar(
                 modifier = Modifier.installerMaterial3BlurEffect(backdrop),

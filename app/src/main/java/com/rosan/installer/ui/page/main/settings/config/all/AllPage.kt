@@ -52,7 +52,6 @@ import com.rosan.installer.ui.navigation.Route
 import com.rosan.installer.ui.page.main.widget.card.ShowDataWidget
 import com.rosan.installer.ui.page.main.widget.snackbar.SwipeableSnackbarHost
 import com.rosan.installer.ui.page.main.widget.util.DeleteEventCollector
-import com.rosan.installer.ui.theme.none
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -106,9 +105,13 @@ fun AllPage(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                ),
                 title = {
                     Text(text = stringResource(id = R.string.config))
                 }
@@ -146,15 +149,15 @@ fun AllPage(
                 snackbar = { SnackbarHost(hostState = snackBarHostState) }
             )
         },
-    ) { innerPadding ->
+    ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
             when (uiState.data.progress) {
-                is AllViewState.Data.Progress.Loading if uiState.data.configs.isEmpty() -> {
+                is AllViewState.Data.Progress.Loading -> {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(
-                                top = innerPadding.calculateTopPadding(),
+                                top = paddingValues.calculateTopPadding(),
                                 bottom = outerPadding.calculateBottomPadding()
                             ),
                         contentAlignment = Alignment.Center
@@ -174,17 +177,12 @@ fun AllPage(
                     }
                 }
 
-                is AllViewState.Data.Progress.Loaded if uiState.data.configs.isEmpty() -> {
-                    // Since we don't allow removing default profile,
-                    // There is no need to handle an empty state.
-                }
-
-                else -> {
+                is AllViewState.Data.Progress.Loaded -> {
                     ShowDataWidget(
                         viewModel = viewModel,
                         listState = listState,
                         contentPadding = PaddingValues(
-                            top = innerPadding.calculateTopPadding() + 16.dp,
+                            top = paddingValues.calculateTopPadding() + 16.dp,
                             bottom = outerPadding.calculateBottomPadding() + 16.dp,
                             start = 16.dp + horizontalSafeInsets.calculateStartPadding(layoutDirection),
                             end = 16.dp + horizontalSafeInsets.calculateEndPadding(layoutDirection)

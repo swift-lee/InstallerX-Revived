@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 InstallerX Revived contributors
-package com.rosan.installer.ui.page.main.settings.config.home
+package com.rosan.installer.ui.page.main.settings.home
 
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
@@ -27,14 +27,7 @@ class HomePageViewModel(
             globalAuthorizer = prefs.authorizer,
             activate = prefs.authorizer != Authorizer.Shizuku || (available && authorized),
             shizukuAvailable = available,
-            shizukuAuthorized = authorized,
-            style =
-                if (prefs.showMiuixUI)
-                    UiStyle.Miuix
-                else if (prefs.showExpressiveUI)
-                    UiStyle.MaterialExpressive
-                else
-                    UiStyle.Material
+            shizukuAuthorized = authorized
         )
     }.stateIn(
         scope = viewModelScope,

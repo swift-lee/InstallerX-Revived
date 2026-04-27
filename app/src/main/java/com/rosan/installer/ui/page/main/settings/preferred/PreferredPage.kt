@@ -53,7 +53,6 @@ import com.rosan.installer.ui.page.main.widget.dialog.ErrorDisplayDialog
 import com.rosan.installer.ui.page.main.widget.setting.LabelWidget
 import com.rosan.installer.ui.page.main.widget.snackbar.SwipeableSnackbarHost
 import com.rosan.installer.ui.page.main.widget.util.OnLifecycleEvent
-import com.rosan.installer.ui.theme.none
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -118,7 +117,6 @@ fun PreferredPage(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .fillMaxSize(),
-        contentWindowInsets = WindowInsets.none,
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
