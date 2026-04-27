@@ -4,20 +4,29 @@ package com.rosan.installer.data.device.provider
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import androidx.core.net.toUri
 import com.rosan.installer.core.env.DeviceConfig
 import com.rosan.installer.core.reflection.ReflectionProvider
 import com.rosan.installer.core.reflection.invokeStatic
 import com.rosan.installer.domain.device.model.Manufacturer
 import com.rosan.installer.domain.device.model.ShizukuMode
 import com.rosan.installer.domain.device.provider.DeviceCapabilityProvider
+import com.rosan.installer.domain.settings.model.RootMode
 import com.rosan.installer.util.hasFlag
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 import timber.log.Timber
 
@@ -44,6 +53,19 @@ class DeviceCapabilityProviderImpl(
     override val hasMiPackageInstaller: Boolean by lazy {
         getMiuiPackageInstallerVersion() != null
     }
+
+    override val isDefaultInstaller: Boolean
+        get() {
+            val intent = Intent(Intent.ACTION_VIEW)
+                .addCategory(Intent.CATEGORY_DEFAULT)
+                .setDataAndType(
+                    "content://storage/emulated/0/test.apk".toUri(),
+                    "application/vnd.android.package-archive"
+                )
+            val resolveInfo = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            Timber.d("ResolveInfo: $resolveInfo")
+            return resolveInfo?.activityInfo?.packageName == context.packageName
+        }
 
     override val isSystemApp: Boolean by lazy {
         try {
@@ -88,8 +110,11 @@ class DeviceCapabilityProviderImpl(
     private val _shizukuModeFlow = MutableStateFlow(ShizukuMode.NONE)
     override val shizukuModeFlow: StateFlow<ShizukuMode> = _shizukuModeFlow.asStateFlow()
 
-    // --- Root Static State ---
-    // override var rootMode: RootMode = RootMode.None
+    // --- Root Dynamic Flow ---
+    private val _rootModeFlow = MutableStateFlow(RootMode.None)
+    override val rootModeFlow: StateFlow<RootMode> = _rootModeFlow.asStateFlow()
+
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     init {
         // Register Shizuku listeners to drive state automatically
@@ -100,6 +125,15 @@ class DeviceCapabilityProviderImpl(
         Shizuku.addBinderDeadListener {
             _shizukuModeFlow.value = ShizukuMode.NONE
             Timber.d("Shizuku binder is dead. Status updated to NONE.")
+        }
+
+        refreshPrivilegeStatus()
+    }
+
+    override fun refreshPrivilegeStatus() {
+        updateShizukuModeInternal()
+        scope.launch {
+            _rootModeFlow.value = detectRootMode()
         }
     }
 
@@ -116,47 +150,38 @@ class DeviceCapabilityProviderImpl(
         }
     }
 
-    /*    override suspend fun refreshPrivilegeStatus() {
-            // 1. Manually trigger a fallback refresh for Shizuku
-            // Already handled in init { }
-            // updateShizukuModeInternal()
+    private suspend fun detectRootMode(): RootMode = withContext(Dispatchers.IO) {
+        if (checkBinaryViaSu("ksud -V")) return@withContext RootMode.KernelSU
+        if (checkBinaryViaSu("magisk -v")) return@withContext RootMode.Magisk
+        if (checkBinaryViaSu("apd -v")) return@withContext RootMode.APatch
 
-            // 2. Fetch the Root status once and assign it to the static variable
-            rootMode = detectRootMode()
-        }*/
+        RootMode.None
+    }
 
-    /* private suspend fun detectRootMode(): RootMode = withContext(Dispatchers.IO) {
-         if (checkBinaryViaSu("ksud -V")) return@withContext RootMode.KernelSU
-         if (checkBinaryViaSu("magisk -v")) return@withContext RootMode.Magisk
-         if (checkBinaryViaSu("apd -v")) return@withContext RootMode.APatch
+    private fun checkBinaryViaSu(command: String): Boolean {
+        return try {
+            // Execute the specific binary check within the su environment
+            val process = ProcessBuilder("su", "-c", command)
+                .redirectErrorStream(true)
+                .start()
 
-         RootMode.None
-     }*/
-
-    /*  private fun checkBinaryViaSu(command: String): Boolean {
-          return try {
-              // Execute the specific binary check within the su environment
-              val process = ProcessBuilder("su", "-c", command)
-                  .redirectErrorStream(true)
-                  .start()
-
-              val exitCode = process.waitFor()
-              if (exitCode == 0) {
-                  Timber.d("RootDetection: Successfully executed -> su -c '$command'")
-                  true
-              } else {
-                  Timber.d("RootDetection: Command 'su -c \'$command\'' failed with exit code: $exitCode")
-                  false
-              }
-          } catch (e: CancellationException) {
-              // Rethrow to maintain structured concurrency
-              throw e
-          } catch (e: Exception) {
-              // Catch IOExceptions or other runtime errors
-              Timber.d("RootDetection: Execution failed for 'su -c '$command\': ${e.message}")
-              false
-          }
-      }*/
+            val exitCode = process.waitFor()
+            if (exitCode == 0) {
+                Timber.d("RootDetection: Successfully executed -> su -c '$command'")
+                true
+            } else {
+                Timber.d("RootDetection: Command 'su -c '$command'' failed with exit code: $exitCode")
+                false
+            }
+        } catch (e: CancellationException) {
+            // Rethrow to maintain structured concurrency
+            throw e
+        } catch (e: Exception) {
+            // Catch IOExceptions or other runtime errors
+            Timber.d("RootDetection: Execution failed for 'su -c '$command'': ${e.message}")
+            false
+        }
+    }
 
     private fun calculateSessionInstallSupport(): Boolean {
         val isMi = DeviceConfig.currentManufacturer == Manufacturer.XIAOMI

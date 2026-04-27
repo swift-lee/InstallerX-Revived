@@ -5,7 +5,8 @@ package com.rosan.installer.ui.page.main.settings.home
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rosan.installer.domain.settings.model.Authorizer
+import com.rosan.installer.domain.device.provider.DeviceCapabilityProvider
+import com.rosan.installer.domain.settings.model.RootMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,18 +17,42 @@ import rikka.shizuku.Shizuku
 
 class HomePageViewModel(
     appSettingsRepo: AppSettingsRepository,
+    private val capabilityProvider: DeviceCapabilityProvider
 ) : ViewModel() {
-    private val shizukuStatusFlow = MutableStateFlow(getShizukuStatus())
+    private val refreshFlow = MutableStateFlow(0)
 
     val state: StateFlow<MainPageViewState> = combine(
         appSettingsRepo.preferencesFlow,
-        shizukuStatusFlow
-    ) { prefs, (available, authorized) ->
+        capabilityProvider.shizukuModeFlow,
+        capabilityProvider.rootModeFlow,
+        refreshFlow
+    ) { prefs, shizukuMode, rootMode, _ ->
+        val isDefault = capabilityProvider.isDefaultInstaller
+        val shizukuAvailable = shizukuMode != com.rosan.installer.domain.device.model.ShizukuMode.NONE
+        val shizukuAuthorized = if (shizukuAvailable) {
+            try {
+                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            } catch (_: Exception) {
+                false
+            }
+        } else {
+            false
+        }
+
+        var availableCount = 0
+        if (shizukuAvailable && shizukuAuthorized) availableCount++
+        if (rootMode != RootMode.None) availableCount++
+        if (capabilityProvider.isSystemApp) availableCount++
+
         MainPageViewState(
             globalAuthorizer = prefs.authorizer,
-            activate = prefs.authorizer != Authorizer.Shizuku || (available && authorized),
-            shizukuAvailable = available,
-            shizukuAuthorized = authorized
+            activate = isDefault,
+            isDefaultInstaller = isDefault,
+            shizukuAvailable = shizukuAvailable,
+            shizukuAuthorized = shizukuAuthorized,
+            rootMode = rootMode,
+            isSystemApp = capabilityProvider.isSystemApp,
+            availableAuthorizerCount = availableCount
         )
     }.stateIn(
         scope = viewModelScope,
@@ -38,27 +63,9 @@ class HomePageViewModel(
     fun dispatch(action: HomePageViewAction) {
         when (action) {
             is HomePageViewAction.RefreshActivateStatus -> {
-                shizukuStatusFlow.value = getShizukuStatus()
+                capabilityProvider.refreshPrivilegeStatus()
+                refreshFlow.value++
             }
         }
-    }
-
-    private fun getShizukuStatus(): Pair<Boolean, Boolean> {
-        val shizukuAvailable = try {
-            Shizuku.pingBinder()
-        } catch (_: Exception) {
-            false
-        }
-
-        val shizukuAuthorized = if (shizukuAvailable) {
-            try {
-                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-            } catch (_: Exception) {
-                false
-            }
-        } else {
-            false
-        }
-        return shizukuAvailable to shizukuAuthorized
     }
 }

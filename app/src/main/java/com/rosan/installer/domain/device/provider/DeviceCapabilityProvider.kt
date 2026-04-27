@@ -3,11 +3,13 @@
 package com.rosan.installer.domain.device.provider
 
 import com.rosan.installer.domain.device.model.ShizukuMode
+import com.rosan.installer.domain.settings.model.RootMode
 import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceCapabilityProvider {
     val isSessionInstallSupported: Boolean
     val hasMiPackageInstaller: Boolean
+    val isDefaultInstaller: Boolean
 
     val isSystemApp: Boolean
     val isHyperOS: Boolean
@@ -21,16 +23,15 @@ interface DeviceCapabilityProvider {
      */
     val shizukuModeFlow: StateFlow<ShizukuMode>
 
-    /*    */
     /**
-     * Detected local root implementation.
-     * Static during the app's lifecycle.
-     *//*
-    var rootMode: RootMode*/
+     * Flow emitting the detected local root implementation.
+     * Static during the app's lifecycle but detected asynchronously.
+     */
+    val rootModeFlow: StateFlow<RootMode>
 
     /**
      * Refreshes both Shizuku and Root detection states.
      * This should be called early in the app lifecycle (e.g., Application.onCreate).
      */
-    // suspend fun refreshPrivilegeStatus()
+    fun refreshPrivilegeStatus()
 }

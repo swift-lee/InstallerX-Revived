@@ -2,8 +2,10 @@
 // Copyright (C) 2026 InstallerX Revived contributors
 package com.rosan.installer.ui.page.main.settings.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.TaskAlt
 import androidx.compose.material.icons.twotone.Warning
@@ -39,6 +42,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -51,6 +56,7 @@ import com.rosan.installer.R
 import com.rosan.installer.domain.device.model.ShizukuMode
 import com.rosan.installer.domain.device.provider.DeviceCapabilityProvider
 import com.rosan.installer.domain.settings.model.Authorizer
+import com.rosan.installer.domain.settings.model.RootMode
 import com.rosan.installer.ui.page.main.widget.util.OnLifecycleEvent
 import com.rosan.installer.ui.theme.getMaterial3AppBarColor
 import com.rosan.installer.ui.theme.installerMaterial3BlurEffect
@@ -64,7 +70,8 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop
 fun NewHomePage(
     useBlur: Boolean,
     viewModel: HomePageViewModel = koinViewModel(),
-    outerPadding: PaddingValues
+    outerPadding: PaddingValues,
+    configCount: Int = 0
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -108,13 +115,64 @@ fun NewHomePage(
         ) {
             item {
                 if (uiState.activate) {
-                    ActivateStatusCard(
-                        state = uiState,
-                    )
+                    ActivateStatusCard()
                 } else {
-                    InActivateStatusCard(
-                        state = uiState,
+                    InActivateStatusCard()
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.size(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.home_stat_authorizers),
+                        value = uiState.availableAuthorizerCount.toString(),
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
                     )
+                    StatCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.home_stat_profiles),
+                        value = configCount.toString(),
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    )
+                }
+            }
+
+            if (uiState.rootMode != RootMode.None || uiState.isSystemApp || uiState.shizukuAvailable) {
+                item {
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (uiState.shizukuAvailable) {
+                            val shizukuMode: ShizukuMode = if (LocalInspectionMode.current) {
+                                ShizukuMode.NONE
+                            } else {
+                                koinInject<DeviceCapabilityProvider>().shizukuModeFlow.collectAsState().value
+                            }
+                            InfoChip(
+                                text = stringResource(R.string.shizuku_working_mode, shizukuMode.name),
+                                containerColor = if (uiState.shizukuAuthorized) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+                            )
+                        }
+                        if (uiState.rootMode != RootMode.None) {
+                            InfoChip(
+                                text = stringResource(R.string.home_root_mode, uiState.rootMode.name),
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        }
+                        if (uiState.isSystemApp) {
+                            InfoChip(
+                                text = stringResource(R.string.home_system_app),
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                            )
+                        }
+                    }
                 }
             }
 
@@ -124,9 +182,58 @@ fun NewHomePage(
 }
 
 @Composable
-private fun InActivateStatusCard(
-    state: MainPageViewState,
+private fun InfoChip(
+    text: String,
+    containerColor: Color
 ) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    containerColor: Color
+) {
+    ElevatedCard(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun InActivateStatusCard() {
     ElevatedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.errorContainer
@@ -153,30 +260,15 @@ private fun InActivateStatusCard(
             )
             Column(Modifier.padding(start = 20.dp)) {
                 Text(
-                    text = stringResource(R.string.inactivate),
+                    text = stringResource(R.string.working_status_not_default_installer),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     color = MaterialTheme.colorScheme.onErrorContainer,
                 )
                 Text(
-                    text = stringResource(R.string.activate_mode, state.globalAuthorizer.value),
+                    text = stringResource(R.string.working_status_not_default_installer_desc),
                     style = MaterialTheme.typography.bodySmallEmphasized,
                     color = MaterialTheme.colorScheme.onErrorContainer,
                 )
-                if (state.globalAuthorizer == Authorizer.Shizuku) {
-                    if (!state.shizukuAuthorized) {
-                        Text(
-                            text = stringResource(R.string.shizuku_not_authorized),
-                            style = MaterialTheme.typography.bodySmallEmphasized,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                        )
-                    } else if (!state.shizukuAvailable) {
-                        Text(
-                            text = stringResource(R.string.shizuku_not_available),
-                            style = MaterialTheme.typography.bodySmallEmphasized,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                        )
-                    }
-                }
             }
         }
     }
@@ -184,9 +276,7 @@ private fun InActivateStatusCard(
 
 
 @Composable
-private fun ActivateStatusCard(
-    state: MainPageViewState,
-) {
+private fun ActivateStatusCard() {
     ElevatedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -213,29 +303,15 @@ private fun ActivateStatusCard(
             )
             Column(Modifier.padding(start = 20.dp)) {
                 Text(
-                    text = stringResource(R.string.activate),
+                    text = stringResource(R.string.working_status_default_installer),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    text = stringResource(R.string.activate_mode, state.globalAuthorizer.value),
+                    text = stringResource(R.string.working_status_default_installer_desc),
                     style = MaterialTheme.typography.bodySmallEmphasized,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
-                if (state.globalAuthorizer == Authorizer.Shizuku) {
-                    val shizukuMode: ShizukuMode = if (LocalInspectionMode.current) {
-                        // We are in Compose Preview, don't actually request the data
-                        ShizukuMode.NONE
-                    } else {
-                        koinInject<DeviceCapabilityProvider>().shizukuModeFlow.collectAsState().value
-                    }
-
-                    Text(
-                        text = stringResource(R.string.shizuku_working_mode, shizukuMode.name),
-                        style = MaterialTheme.typography.bodySmallEmphasized,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
             }
         }
     }
@@ -248,11 +324,7 @@ private fun PreviewOfActivateStatusCard() {
     ) {
         Authorizer.entries.forEach {
             item {
-                ActivateStatusCard(
-                    MainPageViewState(
-                        globalAuthorizer = it,
-                    )
-                )
+                ActivateStatusCard()
             }
         }
     }
@@ -265,24 +337,7 @@ private fun PreviewOfInActivateStatusCard() {
     ) {
         Authorizer.entries.forEach {
             item {
-                InActivateStatusCard(
-                    MainPageViewState(
-                        globalAuthorizer = it,
-                        shizukuAvailable = false,
-                        shizukuAuthorized = false
-                    )
-                )
-            }
-            if (it == Authorizer.Shizuku) {
-                item {
-                    InActivateStatusCard(
-                        MainPageViewState(
-                            globalAuthorizer = it,
-                            shizukuAvailable = false,
-                            shizukuAuthorized = true
-                        )
-                    )
-                }
+                InActivateStatusCard()
             }
         }
     }

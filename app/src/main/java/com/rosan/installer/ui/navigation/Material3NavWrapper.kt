@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.Home
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBarDefaults
@@ -52,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
@@ -96,13 +95,14 @@ fun Material3MainPageWrapper(
     val configCountFlow = remember { configRepo.flowAll().map { it.size } }
     val configCount by configCountFlow.collectAsStateWithLifecycle(initialValue = 0)
     val homeLabel = stringResource(id = R.string.home)
+    val homeIcon = ImageVector.vectorResource(R.drawable.ic_tile_icon)
     val configLabel = stringResource(R.string.config)
     val preferredLabel = stringResource(R.string.preferred)
 
     val tabs = remember(homeLabel, configLabel, preferredLabel) {
         listOf(
             NavigationTab(
-                icon = Icons.TwoTone.Home,
+                icon = homeIcon,
                 label = homeLabel
             ),
             NavigationTab(
@@ -172,7 +172,11 @@ fun Material3MainPageWrapper(
                 // Delegate page content rendering based on the current page index
                 when (page) {
                     0 -> if (showExpressiveUI) {
-                        NewHomePage(useBlur = useBlur, outerPadding = paddingValues)
+                        NewHomePage(
+                            useBlur = useBlur,
+                            outerPadding = paddingValues,
+                            configCount = configCount
+                        )
                     } else {
                         HomePage(outerPadding = paddingValues)
                     }
@@ -215,7 +219,11 @@ fun Material3MainPageWrapper(
                 // Delegate page content rendering based on the current page index
                 when (page) {
                     0 -> if (showExpressiveUI) {
-                        NewHomePage(useBlur = useBlur, outerPadding = paddingValues)
+                        NewHomePage(
+                            useBlur = useBlur,
+                            outerPadding = paddingValues,
+                            configCount = configCount
+                        )
                     } else {
                         HomePage(outerPadding = paddingValues)
                     }

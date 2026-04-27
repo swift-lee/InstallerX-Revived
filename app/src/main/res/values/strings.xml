@@ -13,6 +13,14 @@
     <string name="home">Home</string>
     <string name="inactivate">Inactivate</string>
     <string name="activate">Activate</string>
+    <string name="working_status_default_installer">Working as default installer</string>
+    <string name="working_status_not_default_installer">Not set as default installer</string>
+    <string name="working_status_default_installer_desc">The app is currently the default package installer.</string>
+    <string name="working_status_not_default_installer_desc">The app needs to be set as the default installer to work properly in some cases.</string>
+    <string name="home_stat_authorizers">Authorizers</string>
+    <string name="home_stat_profiles">Profiles</string>
+    <string name="home_root_mode">Root: %s</string>
+    <string name="home_system_app">System App</string>
     <string name="activate_mode">Activate mode: %s</string>
     <string name="shizuku_working_mode">Shizuku working mode: %s</string>
     <string name="shizuku_not_authorized">Please grant permission to access Sui or Shizuku</string>
