@@ -79,6 +79,7 @@ sealed class InstallerViewAction {
      * @param granted True to approve, false to deny.
      */
     data class ApproveSession(val sessionId: Int, val granted: Boolean) : InstallerViewAction()
+    data class ApproveVirusTotal(val continueInstall: Boolean) : InstallerViewAction()
 
     /**
      * Toggles a specific flag for the uninstallation process.

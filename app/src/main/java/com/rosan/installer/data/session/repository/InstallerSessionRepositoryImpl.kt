@@ -15,6 +15,9 @@ import com.rosan.installer.domain.session.model.SelectInstallEntity
 import com.rosan.installer.domain.session.model.UninstallInfo
 import com.rosan.installer.domain.session.repository.InstallerSessionRepository
 import com.rosan.installer.domain.settings.model.ConfigModel
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
+import com.rosan.installer.domain.virustotal.model.VirusTotalDecision
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
@@ -45,6 +48,8 @@ class InstallerSessionRepositoryImpl(
     override var moduleLog: List<String> = emptyList()
     override val uninstallInfo: MutableStateFlow<UninstallInfo?> = MutableStateFlow(null)
     override val confirmationDetails: MutableStateFlow<ConfirmationDetails?> = MutableStateFlow(null)
+    override val virusTotalResult: MutableStateFlow<VirusTotalCheckResult?> = MutableStateFlow(null)
+    var pendingVirusTotalDecision: CompletableDeferred<VirusTotalDecision>? = null
 
     override fun resolveInstall(activity: Activity) {
         Timber.d("[id=$id] resolve() called. Emitting Action.Resolve.")
@@ -93,6 +98,11 @@ class InstallerSessionRepositoryImpl(
         action.tryEmit(Action.ApproveSession(sessionId, granted))
     }
 
+    override fun approveVirusTotal(continueInstall: Boolean) {
+        Timber.d("[id=$id] approveVirusTotal() called, continueInstall=$continueInstall.")
+        action.tryEmit(Action.ApproveVirusTotal(continueInstall))
+    }
+
     override fun reboot(reason: String) {
         Timber.d("[id=$id] reboot() called. Emitting Action.Reboot.")
         action.tryEmit(Action.Reboot(reason))
@@ -114,6 +124,9 @@ class InstallerSessionRepositoryImpl(
             Timber.d("[id=$id] close() called. Emitting Action.Finish and triggering cleanup.")
 
             // 1. Notify UI and Service that we are done
+            pendingVirusTotalDecision?.complete(VirusTotalDecision.Cancel)
+            pendingVirusTotalDecision = null
+            virusTotalResult.value = null
             action.tryEmit(Action.Finish)
 
             // 2. Trigger the callback to remove from SessionManager
@@ -156,6 +169,7 @@ class InstallerSessionRepositoryImpl(
         data class Uninstall(val packageName: String) : Action()
         data class ResolveConfirmInstall(val activity: Activity, val sessionId: Int) : Action()
         data class ApproveSession(val sessionId: Int, val granted: Boolean) : Action()
+        data class ApproveVirusTotal(val continueInstall: Boolean) : Action()
 
         /**
          * Action to trigger device reboot after cleanup.

@@ -165,6 +165,13 @@
     <string name="virus_total_install_check">Check with VirusTotal</string>
     <string name="virus_total_install_check_desc">Query this APK hash before installing</string>
     <string name="virus_total_install_check_no_api_key">Configure a VirusTotal API key to enable this check</string>
+    <string name="virus_total_checking_install">Checking with VirusTotal…</string>
+    <string name="virus_total_scanning">Scanning…</string>
+    <string name="virus_total_risky_title">VirusTotal warning</string>
+    <string name="virus_total_risky_body">VirusTotal reported this APK as risky. Malicious: %1$d, suspicious: %2$d. Details: %3$s</string>
+    <string name="virus_total_check_failed_title">VirusTotal check failed</string>
+    <string name="virus_total_continue_install">Continue install</string>
+    <string name="virus_total_cancelled">VirusTotal check was cancelled</string>
     <string name="uninstaller_settings_require_biometric_auth">Require Biometric Auth to Uninstall</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">Require biometric auth when uninstalling</string>
     <string name="use_biometric_confirm_change_auth_settings">Are you sure you want to change this setting</string>

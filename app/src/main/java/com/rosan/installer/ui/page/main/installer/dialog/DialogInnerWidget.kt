@@ -25,6 +25,9 @@ import com.rosan.installer.ui.page.main.installer.dialog.inner.readyDialog
 import com.rosan.installer.ui.page.main.installer.dialog.inner.resolveFailedDialog
 import com.rosan.installer.ui.page.main.installer.dialog.inner.resolvingDialog
 import com.rosan.installer.ui.page.main.installer.dialog.inner.uninstallFailedDialog
+import com.rosan.installer.ui.page.main.installer.dialog.inner.virusTotalBlockedDialog
+import com.rosan.installer.ui.page.main.installer.dialog.inner.virusTotalCancelledDialog
+import com.rosan.installer.ui.page.main.installer.dialog.inner.virusTotalScanningDialog
 import com.rosan.installer.ui.page.main.installer.dialog.inner.uninstallReadyDialog
 import com.rosan.installer.ui.page.main.installer.dialog.inner.uninstallSuccessDialog
 import com.rosan.installer.ui.page.main.installer.dialog.inner.uninstallingDialog
@@ -60,6 +63,9 @@ fun dialogGenerateParams(
         is InstallerStage.InstallExtendedMenu -> installExtendedMenuDialog(viewModel)
         is InstallerStage.InstallExtendedSubMenu -> installExtendedMenuSubMenuDialog(viewModel)
         is InstallerStage.Installing -> installingDialog(viewModel)
+        is InstallerStage.VirusTotalChecking -> virusTotalScanningDialog(viewModel)
+        is InstallerStage.VirusTotalBlocked -> virusTotalBlockedDialog(viewModel)
+        is InstallerStage.VirusTotalCancelled -> virusTotalCancelledDialog(viewModel)
         is InstallerStage.InstallSuccess -> installSuccessDialog(viewModel)
         is InstallerStage.InstallFailed -> installFailedDialog(viewModel)
         is InstallerStage.InstallCompleted -> installCompletedDialog(viewModel, stage.results)

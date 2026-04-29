@@ -24,6 +24,8 @@ sealed class DialogParamsType(val id: String) {
     data object InstallerInfo : DialogParamsType("installer_info")
     data object InstallerPrepareInstall : DialogParamsType("installer_prepare")
     data object InstallerInstalling : DialogParamsType("installer_installing")
+    data object InstallerVirusTotalChecking : DialogParamsType("installer_virus_total_checking")
+    data object InstallerVirusTotalBlocked : DialogParamsType("installer_virus_total_blocked")
     data object InstallerInstallSuccess : DialogParamsType("install_success")
     data object InstallerInstallFailed : DialogParamsType("install_failed")
     data object InstallerInstallCompleted : DialogParamsType("install_completed")

@@ -60,6 +60,7 @@ import com.rosan.installer.ui.page.miuix.installer.sheetcontent.NonInstallFailed
 import com.rosan.installer.ui.page.miuix.installer.sheetcontent.PrepareSettingsContent
 import com.rosan.installer.ui.page.miuix.installer.sheetcontent.UninstallFailedContent
 import com.rosan.installer.ui.page.miuix.installer.sheetcontent.UninstallPrepareContent
+import com.rosan.installer.ui.page.miuix.installer.sheetcontent.VirusTotalBlockedContent
 import com.rosan.installer.ui.page.miuix.installer.sheetcontent.UninstallSuccessContent
 import com.rosan.installer.ui.page.miuix.installer.sheetcontent.UninstallingContent
 import com.rosan.installer.ui.page.miuix.widgets.DropdownItem
@@ -577,6 +578,20 @@ fun MiuixInstallerPage(
                             )
                         }
 
+                        is InstallerStage.VirusTotalBlocked -> {
+                            VirusTotalBlockedContent(
+                                viewModel = viewModel,
+                                onClose = closeSheet
+                            )
+                        }
+
+                        is InstallerStage.VirusTotalCancelled -> {
+                            NonInstallFailedContent(
+                                error = error,
+                                onClose = closeSheet
+                            )
+                        }
+
                         is InstallerStage.InstallFailed -> {
                             if (error is ModuleInstallFailedIncompatibleAuthorizerException ||
                                 error is ModuleInstallCmdInitException ||
@@ -632,10 +647,13 @@ fun MiuixInstallerPage(
                             )
                         }
 
-                        is InstallerStage.Resolving, is InstallerStage.Analysing -> {
+                        is InstallerStage.Resolving, is InstallerStage.Analysing, is InstallerStage.VirusTotalChecking -> {
                             LoadingContent(
-                                statusText = if (stage is InstallerStage.Resolving) stringResource(R.string.installer_resolving)
-                                else stringResource(R.string.installer_analysing)
+                                statusText = when (stage) {
+                                    is InstallerStage.Resolving -> stringResource(R.string.installer_resolving)
+                                    is InstallerStage.VirusTotalChecking -> stringResource(R.string.virus_total_scanning)
+                                    else -> stringResource(R.string.installer_analysing)
+                                }
                             )
                         }
 

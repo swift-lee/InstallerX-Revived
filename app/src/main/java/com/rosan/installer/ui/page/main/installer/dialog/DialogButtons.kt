@@ -113,7 +113,7 @@ private fun InnerButton(
         },
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
-        colors = ButtonDefaults.buttonColors(
+        colors = button.colors ?: ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),

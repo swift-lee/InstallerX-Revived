@@ -27,6 +27,7 @@ import com.rosan.installer.domain.settings.model.InstallMode
 import com.rosan.installer.domain.settings.model.InstallerMode
 import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
+import com.rosan.installer.domain.virustotal.exception.VirusTotalCheckException
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.util.addFlag
 import com.rosan.installer.util.hasFlag
@@ -81,8 +82,9 @@ class InstallerViewModel(
     // Combines dynamic local state with reactive global app settings.
     val uiState: StateFlow<InstallerState> = combine(
         _localState,
-        appSettingsRepo.preferencesFlow
-    ) { local, prefs ->
+        appSettingsRepo.preferencesFlow,
+        session.virusTotalResult
+    ) { local, prefs, virusTotalResult ->
         local.copy(
             viewSettings = local.viewSettings.copy(
                 useBlur = prefs.useBlur,
@@ -102,6 +104,7 @@ class InstallerViewModel(
             ),
             rootMode = prefs.labRootMode,
             managedInstallerPackages = prefs.managedInstallerPackages,
+            virusTotalResult = virusTotalResult,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -190,6 +193,7 @@ class InstallerViewModel(
             is InstallerViewAction.SetInstaller -> selectInstaller(action.installer)
             is InstallerViewAction.SetTargetUser -> selectTargetUser(action.userId)
             is InstallerViewAction.ApproveSession -> session.approveConfirmation(action.sessionId, action.granted)
+            is InstallerViewAction.ApproveVirusTotal -> session.approveVirusTotal(action.continueInstall)
             is InstallerViewAction.ShareApp -> shareApp(action.appEntity)
             is InstallerViewAction.ShowToast -> toast(action.message)
             is InstallerViewAction.ShowToastRes -> toast(action.messageResId)
@@ -222,7 +226,9 @@ class InstallerViewModel(
         is ProgressEntity.InstallCompleted -> InstallerStage.InstallCompleted(progress.results)
 
         ProgressEntity.InstallFailed -> {
-            if (isInstallingModule) {
+            if (session.error is VirusTotalCheckException && (session.error as VirusTotalCheckException).cancelled) {
+                InstallerStage.VirusTotalCancelled
+            } else if (isInstallingModule) {
                 val currentOutput = session.moduleLog.toMutableList()
                 session.error.message?.let { msg ->
                     val errorLine = "ERROR: $msg"
@@ -237,6 +243,8 @@ class InstallerViewModel(
             else InstallerStage.InstallSuccess
         }
 
+        ProgressEntity.VirusTotalChecking -> InstallerStage.VirusTotalChecking
+        ProgressEntity.VirusTotalBlocked -> InstallerStage.VirusTotalBlocked
         is ProgressEntity.InstallingModule -> InstallerStage.InstallingModule(progress.output)
 
         ProgressEntity.InstallConfirming -> {
@@ -259,7 +267,11 @@ class InstallerViewModel(
         ProgressEntity.UninstallFailed -> if (isRetrying) InstallerStage.InstallFailed else InstallerStage.UninstallFailed
         ProgressEntity.UninstallSuccess -> if (isRetrying) InstallerStage.InstallRetryDowngradeUsingUninstall else InstallerStage.UninstallSuccess
         ProgressEntity.UninstallReady -> InstallerStage.UninstallReady
-        ProgressEntity.InstallResolving, ProgressEntity.InstallAnalysing, is ProgressEntity.InstallPreparing -> _localState.value.stage
+        ProgressEntity.InstallResolving,
+        ProgressEntity.InstallAnalysing,
+        ProgressEntity.VirusTotalChecking,
+        ProgressEntity.VirusTotalBlocked,
+        is ProgressEntity.InstallPreparing -> _localState.value.stage
         else -> InstallerStage.Ready
     }
 
@@ -291,11 +303,17 @@ class InstallerViewModel(
                 Pair(progress, uninstallInfo)
             }.collect { (progress, uninstallInfo) ->
 
-                if (progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallPreparing || progress is ProgressEntity.InstallAnalysing) {
+                if (progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallPreparing || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalChecking) {
                     if (isInstallingModule) {
                         loadingStateJob?.cancel()
                         _localState.update {
-                            it.copy(stage = if (progress is ProgressEntity.InstallPreparing) InstallerStage.Preparing(progress.progress) else InstallerStage.Analysing)
+                            it.copy(
+                                stage = when (progress) {
+                                    is ProgressEntity.InstallPreparing -> InstallerStage.Preparing(progress.progress)
+                                    ProgressEntity.VirusTotalChecking -> InstallerStage.VirusTotalChecking
+                                    else -> InstallerStage.Analysing
+                                }
+                            )
                         }
                     } else if (loadingStateJob == null || !loadingStateJob!!.isActive) {
                         loadingStateJob = viewModelScope.launch {

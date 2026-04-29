@@ -14,8 +14,10 @@ import com.rosan.installer.domain.device.provider.DeviceCapabilityProvider
 import com.rosan.installer.domain.engine.exception.AnalyseFailedAllFilesUnsupportedException
 import com.rosan.installer.domain.engine.exception.AuthenticationFailedException
 import com.rosan.installer.domain.engine.model.AnalyseExtraEntity
+import com.rosan.installer.domain.engine.model.AppEntity
 import com.rosan.installer.domain.engine.model.PackageAnalysisResult
 import com.rosan.installer.domain.engine.model.SessionMode
+import com.rosan.installer.domain.engine.model.sortedBest
 import com.rosan.installer.domain.engine.model.sourcePath
 import com.rosan.installer.domain.engine.usecase.AnalyzePackageUseCase
 import com.rosan.installer.domain.engine.usecase.ApproveSessionUseCase
@@ -38,8 +40,13 @@ import com.rosan.installer.domain.settings.model.InstallMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.domain.settings.repository.StringSetting
+import com.rosan.installer.domain.virustotal.exception.VirusTotalCheckException
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
+import com.rosan.installer.domain.virustotal.model.VirusTotalDecision
+import com.rosan.installer.domain.virustotal.usecase.CheckVirusTotalUseCase
 import com.rosan.installer.ui.common.auth.safeBiometricAuthOrThrow
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -84,6 +91,7 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
     private val processUninstall by inject<ProcessUninstallUseCase>()
     private val getSessionConfirmationDetails by inject<GetSessionConfirmationDetailsUseCase>()
     private val approveSession by inject<ApproveSessionUseCase>()
+    private val checkVirusTotal by inject<CheckVirusTotalUseCase>()
 
     // Cache directory
     private val cacheDirectory = File(context.cacheDir, "installer_sessions/$sessionId")
@@ -128,6 +136,13 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
                         scope.launch {
                             runCatching { handleAction(action) }
                                 .onFailure { Timber.e(it, "ApproveSession failed") }
+                        }
+                    }
+
+                    is InstallerSessionRepositoryImpl.Action.ApproveVirusTotal -> {
+                        scope.launch {
+                            runCatching { handleAction(action) }
+                                .onFailure { Timber.e(it, "ApproveVirusTotal failed") }
                         }
                     }
 
@@ -208,6 +223,7 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
             is InstallerSessionRepositoryImpl.Action.ResolveConfirmInstall -> resolveConfirm(action.activity, action.sessionId)
             // Handle Session Confirmation
             is InstallerSessionRepositoryImpl.Action.ApproveSession -> handleConfirm(action.sessionId, action.granted)
+            is InstallerSessionRepositoryImpl.Action.ApproveVirusTotal -> handleVirusTotalDecision(action.continueInstall)
             // Handle Reboot Action
             is InstallerSessionRepositoryImpl.Action.Reboot -> handleReboot(action.reason)
             // Cancel and Finish are handled in the collector directly
@@ -343,6 +359,7 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
             requestUserBiometricAuthentication(true)
         }
         Timber.d("[id=$sessionId] install: VirusTotal check requested=$checkVirusTotal")
+        if (!runVirusTotalGateIfNeeded(checkVirusTotal, selectedBaseEntity())) return
         session.moduleLog = emptyList()
         performInstallLogic()
     }
@@ -378,6 +395,25 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
 
                 if (targetResult != null) {
                     val entitiesToInstall = appEntities.map { it.copy(selected = true) }
+                    if (!runVirusTotalGateIfNeeded(checkVirusTotal, entitiesToInstall.firstNotNullOfOrNull { it.app as? AppEntity.BaseEntity })) {
+                        appEntities.forEach { entity ->
+                            session.multiInstallResults.add(
+                                InstallResult(
+                                    entity,
+                                    false,
+                                    VirusTotalCheckException(
+                                        session.virusTotalResult.value
+                                            ?: VirusTotalCheckResult.ApiError(
+                                                sha256 = "",
+                                                message = "VirusTotal check was cancelled"
+                                            )
+                                    )
+                                )
+                            )
+                        }
+                        session.currentMultiInstallIndex++
+                        continue
+                    }
                     val tempResults = listOf(targetResult.copy(appEntities = entitiesToInstall))
 
                     // Perform install
@@ -412,6 +448,59 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
 
         // Emit final completion state with results
         session.progress.emit(ProgressEntity.InstallCompleted(session.multiInstallResults.toList()))
+    }
+
+    private fun handleVirusTotalDecision(continueInstall: Boolean) {
+        val decision = if (continueInstall) VirusTotalDecision.Continue else VirusTotalDecision.Cancel
+        session.pendingVirusTotalDecision?.complete(decision)
+    }
+
+    private fun selectedBaseEntity(): AppEntity.BaseEntity? = session.analysisResults
+        .flatMap { it.appEntities }
+        .filter { it.selected }
+        .map { it.app }
+        .sortedBest()
+        .firstNotNullOfOrNull { it as? AppEntity.BaseEntity }
+
+    private suspend fun runVirusTotalGateIfNeeded(
+        checkVirusTotal: Boolean,
+        baseEntity: AppEntity.BaseEntity?,
+    ): Boolean {
+        if (!checkVirusTotal || baseEntity == null) return true
+
+        session.progress.emit(ProgressEntity.VirusTotalChecking)
+        val prefs = appSettingsRepo.preferencesFlow.first()
+        val result = checkVirusTotal(
+            data = baseEntity.data,
+            apiKey = prefs.virusTotalApiKey,
+            endpoint = prefs.virusTotalEndpoint,
+        )
+
+        if (result is VirusTotalCheckResult.Safe) {
+            session.virusTotalResult.value = null
+            return true
+        }
+
+        session.virusTotalResult.value = result
+        session.error = VirusTotalCheckException(result)
+        val decision = CompletableDeferred<VirusTotalDecision>()
+        session.pendingVirusTotalDecision = decision
+        session.progress.emit(ProgressEntity.VirusTotalBlocked)
+
+        return when (decision.await()) {
+            VirusTotalDecision.Continue -> {
+                session.pendingVirusTotalDecision = null
+                session.virusTotalResult.value = null
+                true
+            }
+            VirusTotalDecision.Cancel -> {
+                session.pendingVirusTotalDecision = null
+                session.virusTotalResult.value = null
+                session.error = VirusTotalCheckException(result, cancelled = true)
+                session.progress.emit(ProgressEntity.InstallFailed)
+                false
+            }
+        }
     }
 
     /**

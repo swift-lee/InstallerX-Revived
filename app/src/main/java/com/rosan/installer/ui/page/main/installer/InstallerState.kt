@@ -9,6 +9,7 @@ import com.rosan.installer.domain.session.model.UninstallInfo
 import com.rosan.installer.domain.settings.model.ConfigModel
 import com.rosan.installer.domain.settings.model.NamedPackage
 import com.rosan.installer.domain.settings.model.RootMode
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 
 /**
  * Represents the entire UI state for the Installer screen.
@@ -44,6 +45,7 @@ data class InstallerState(
     val rootMode: RootMode = RootMode.Magisk,
     val availableUsers: Map<Int, String> = emptyMap(),
     val uiUninstallInfo: UninstallInfo? = null,
+    val virusTotalResult: VirusTotalCheckResult? = null,
 
     // Error State
     val error: Throwable = Throwable()
@@ -61,8 +63,11 @@ data class InstallerState(
             is InstallerStage.Uninstalling -> false
 
             is InstallerStage.InstallingModule -> stage.isFinished
+            is InstallerStage.VirusTotalBlocked -> false
+            is InstallerStage.VirusTotalCancelled -> true
             is InstallerStage.InstallPrepare -> !(showMiuixSheetRightActionSettings || showMiuixPermissionList)
             is InstallerStage.Preparing,
+            is InstallerStage.VirusTotalChecking,
             is InstallerStage.Installing -> !viewSettings.disableNotificationOnDismiss
 
             else -> true

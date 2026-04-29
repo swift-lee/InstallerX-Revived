@@ -9,6 +9,7 @@ import com.rosan.installer.domain.session.model.ProgressEntity
 import com.rosan.installer.domain.session.model.SelectInstallEntity
 import com.rosan.installer.domain.session.model.UninstallInfo
 import com.rosan.installer.domain.settings.model.ConfigModel
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.Closeable
@@ -28,6 +29,7 @@ interface InstallerSessionRepository : Closeable {
     var moduleLog: List<String>
     val uninstallInfo: StateFlow<UninstallInfo?>
     val confirmationDetails: StateFlow<ConfirmationDetails?>
+    val virusTotalResult: StateFlow<VirusTotalCheckResult?>
 
     /**
      * Resolves information for a package to be installed.
@@ -52,6 +54,7 @@ interface InstallerSessionRepository : Closeable {
 
     fun resolveConfirmInstall(activity: Activity, sessionId: Int)
     fun approveConfirmation(sessionId: Int, granted: Boolean)
+    fun approveVirusTotal(continueInstall: Boolean)
 
     fun reboot(reason: String)
 
