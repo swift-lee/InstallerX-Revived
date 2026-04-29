@@ -134,6 +134,23 @@
     <string name="installer_biometric_auth_mode_disable_desc">所有安装操作均不使用生物认证</string>
     <string name="installer_biometric_auth_mode_enable_desc">所有的安装操作都需要生物识别认证</string>
     <string name="installer_biometric_auth_mode_follow_config_desc">跟随配置文件中的设定</string>
+    <string name="virus_total_settings" translatable="false">VirusTotal</string>
+    <string name="virus_total_settings_desc">在线版本中使用 VirusTotal 检查 APK 安全性</string>
+    <string name="virus_total_global_mode">全局 VirusTotal 检查</string>
+    <string name="virus_total_mode_disable">禁用 VirusTotal</string>
+    <string name="virus_total_mode_enable">启用 VirusTotal</string>
+    <string name="virus_total_mode_follow_config">跟随配置文件</string>
+    <string name="virus_total_mode_disable_desc">默认不启用 VirusTotal 检查</string>
+    <string name="virus_total_mode_enable_desc">默认启用 VirusTotal 检查</string>
+    <string name="virus_total_mode_follow_config_desc">可用时跟随配置文件设置</string>
+    <string name="virus_total_api_key">VirusTotal API key</string>
+    <string name="virus_total_api_key_desc">作为 x-apikey 请求头使用</string>
+    <string name="virus_total_api_key_configured">已配置</string>
+    <string name="virus_total_api_key_not_configured">未配置</string>
+    <string name="virus_total_endpoint">VirusTotal API 端点</string>
+    <string name="virus_total_endpoint_desc">留空则使用官方端点</string>
+    <string name="virus_total_endpoint_official">官方</string>
+    <string name="virus_total_endpoint_custom">自定义</string>
     <string name="uninstaller_settings_require_biometric_auth">卸载时需要通过设备生物认证</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">在卸载时请求系统进行生物识别进行认证</string>
     <string name="use_biometric_confirm_change_auth_settings">确实要修改此设置吗</string>

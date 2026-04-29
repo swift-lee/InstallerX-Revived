@@ -32,6 +32,9 @@ sealed interface Route : NavKey {
     data object NotificationSettings : Route
 
     @Serializable
+    data object VirusTotalSettings : Route
+
+    @Serializable
     data object UninstallerGlobal : Route
 
     @Serializable

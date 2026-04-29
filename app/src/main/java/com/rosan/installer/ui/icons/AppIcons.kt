@@ -154,6 +154,7 @@ object AppIcons {
     val Authorizer = Icons.TwoTone.Memory
     val SingleLineSettingIcon = Icons.TwoTone.Compress
     val MultiLineSettingIcon = Icons.TwoTone.Expand
+    val Security = Icons.TwoTone.Security
     val DisableAdbVerify = Icons.TwoTone.Security
     val InstallMode = Icons.TwoTone.Downloading
     val BatteryOptimization = Icons.TwoTone.BatterySaver

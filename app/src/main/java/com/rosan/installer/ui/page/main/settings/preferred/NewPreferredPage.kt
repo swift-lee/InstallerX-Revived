@@ -51,6 +51,7 @@ import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.navigation.LocalNavigator
 import com.rosan.installer.ui.navigation.Navigator
 import com.rosan.installer.ui.navigation.Route
+import com.rosan.installer.ui.page.main.settings.preferred.virustotal.VirusTotalSettingsEntry
 import com.rosan.installer.ui.page.main.widget.card.InfoTipCard
 import com.rosan.installer.ui.page.main.widget.dialog.ErrorDisplayDialog
 import com.rosan.installer.ui.page.main.widget.setting.SplicedColumnGroup
@@ -244,6 +245,9 @@ fun NewPreferredPage(
                             lock = false,
                             enabled = uiState.authorizer != Authorizer.None
                         ) { viewModel.dispatch(PreferredViewAction.SetDefaultInstaller(false)) }
+                    }
+                    if (AppConfig.isInternetAccessEnabled) {
+                        item { VirusTotalSettingsEntry(navigator) }
                     }
                 }
             }

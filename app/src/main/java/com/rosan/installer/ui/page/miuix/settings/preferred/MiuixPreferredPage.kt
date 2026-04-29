@@ -39,6 +39,7 @@ import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.navigation.LocalNavigator
 import com.rosan.installer.ui.navigation.Route
 import com.rosan.installer.ui.page.main.settings.preferred.PreferredViewAction
+import com.rosan.installer.ui.page.main.settings.preferred.virustotal.MiuixVirusTotalSettingsEntry
 import com.rosan.installer.ui.page.main.settings.preferred.PreferredViewEvent
 import com.rosan.installer.ui.page.main.settings.preferred.PreferredViewModel
 import com.rosan.installer.ui.page.main.widget.util.OnLifecycleEvent
@@ -223,6 +224,9 @@ fun MiuixPreferredPage(
                         lock = false,
                         enabled = uiState.authorizer != Authorizer.None,
                     ) { viewModel.dispatch(PreferredViewAction.SetDefaultInstaller(false)) }
+                    if (AppConfig.isInternetAccessEnabled) {
+                        MiuixVirusTotalSettingsEntry(navigator)
+                    }
                 }
             }
             item { SmallTitle(stringResource(R.string.other)) }

@@ -16,6 +16,7 @@ import com.rosan.installer.ui.page.main.settings.preferred.installer.notificatio
 import com.rosan.installer.ui.page.main.settings.preferred.lab.LabSettingsViewModel
 import com.rosan.installer.ui.page.main.settings.preferred.theme.ThemeSettingsViewModel
 import com.rosan.installer.ui.page.main.settings.preferred.uninstaller.UninstallerSettingsViewModel
+import com.rosan.installer.ui.page.main.settings.preferred.virustotal.VirusTotalSettingsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -28,6 +29,7 @@ val viewModelModule = module {
     viewModelOf(::InstallerSettingsViewModel)
     viewModelOf(::DialogSettingsViewModel)
     viewModelOf(::NotificationSettingsViewModel)
+    viewModelOf(::VirusTotalSettingsViewModel)
     viewModelOf(::UninstallerSettingsViewModel)
     viewModelOf(::LabSettingsViewModel)
     viewModelOf(::AboutViewModel)

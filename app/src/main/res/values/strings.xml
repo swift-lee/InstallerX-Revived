@@ -140,6 +140,23 @@
     <string name="installer_biometric_auth_mode_disable_desc">Completely disable biometric authentication for every installs</string>
     <string name="installer_biometric_auth_mode_enable_desc">Enable and allow the use of biometric authentication for every installs</string>
     <string name="installer_biometric_auth_mode_follow_config_desc">Follow profile settings set for each app</string>
+    <string name="virus_total_settings" translatable="false">VirusTotal</string>
+    <string name="virus_total_settings_desc">Check APK safety using VirusTotal in online builds</string>
+    <string name="virus_total_global_mode">Global VirusTotal check</string>
+    <string name="virus_total_mode_disable">Disable VirusTotal</string>
+    <string name="virus_total_mode_enable">Enable VirusTotal</string>
+    <string name="virus_total_mode_follow_config">Follow Profile</string>
+    <string name="virus_total_mode_disable_desc">Do not enable VirusTotal checks by default</string>
+    <string name="virus_total_mode_enable_desc">Enable VirusTotal checks by default</string>
+    <string name="virus_total_mode_follow_config_desc">Follow profile settings when available</string>
+    <string name="virus_total_api_key">VirusTotal API key</string>
+    <string name="virus_total_api_key_desc">Used as the x-apikey request header</string>
+    <string name="virus_total_api_key_configured">Configured</string>
+    <string name="virus_total_api_key_not_configured">Not configured</string>
+    <string name="virus_total_endpoint">VirusTotal API endpoint</string>
+    <string name="virus_total_endpoint_desc">Leave empty to use the official endpoint</string>
+    <string name="virus_total_endpoint_official">Official</string>
+    <string name="virus_total_endpoint_custom">Custom</string>
     <string name="uninstaller_settings_require_biometric_auth">Require Biometric Auth to Uninstall</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">Require biometric auth when uninstalling</string>
     <string name="use_biometric_confirm_change_auth_settings">Are you sure you want to change this setting</string>

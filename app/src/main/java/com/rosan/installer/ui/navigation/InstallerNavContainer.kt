@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import com.rosan.installer.core.env.AppConfig
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -50,6 +51,7 @@ import com.rosan.installer.ui.page.main.settings.preferred.lab.LegacyLabPage
 import com.rosan.installer.ui.page.main.settings.preferred.lab.NewLabPage
 import com.rosan.installer.ui.page.main.settings.preferred.theme.LegacyThemeSettingsPage
 import com.rosan.installer.ui.page.main.settings.preferred.theme.NewThemeSettingsPage
+import com.rosan.installer.ui.page.main.settings.preferred.virustotal.VirusTotalSettingsRoute
 import com.rosan.installer.ui.page.main.settings.preferred.uninstaller.LegacyUninstallerGlobalSettingsPage
 import com.rosan.installer.ui.page.main.settings.preferred.uninstaller.NewUninstallerGlobalSettingsPage
 import com.rosan.installer.ui.page.miuix.settings.config.apply.MiuixApplyPage
@@ -232,6 +234,16 @@ fun InstallerNavContainer(
                             } else {
                                 NotificationSettingsPage()
                             }
+                        }
+                    }
+                    entry<Route.VirusTotalSettings> {
+                        if (AppConfig.isInternetAccessEnabled) {
+                            VirusTotalSettingsRoute(
+                                useMiuix = uiState.useMiuix,
+                                useBlur = useBlur
+                            )
+                        } else {
+                            Box(contentAlignment = Alignment.Center) {}
                         }
                     }
                     entry<Route.UninstallerGlobal> {
