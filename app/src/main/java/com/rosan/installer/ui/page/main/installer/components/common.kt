@@ -156,6 +156,7 @@ fun ErrorTextBlock(
 fun WarningTextBlock(
     warnings: List<Pair<String, Color>>,
     modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {},
 ) {
     // Only display the block if there are warnings to show.
     if (warnings.isNotEmpty()) {
@@ -178,6 +179,7 @@ fun WarningTextBlock(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+                content()
             }
         }
     }

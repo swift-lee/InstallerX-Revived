@@ -176,9 +176,9 @@
     <string name="virus_total_passed_label">Passed:</string>
     <string name="virus_total_check_on_virustotal">Check on VirusTotal</string>
     <string name="continue_action">Continue</string>
-    <string name="virus_total_risky_body">VirusTotal reported this APK as risky. Malicious: %1$d, suspicious: %2$d. Details: %3$s</string>
-    <string name="virus_total_risky_reason">Malicious: %1$d, suspicious: %2$d</string>
-    <string name="virus_total_risky_reason_with_passed">Malicious: %1$d, suspicious: %2$d, Passed: %3$d</string>
+    <string name="virus_total_risky_body">VirusTotal reported this APK as risky. Malicious: %1$d, Suspicious: %2$d. Details: %3$s</string>
+    <string name="virus_total_risky_reason">Malicious: %1$d, Suspicious: %2$d</string>
+    <string name="virus_total_risky_reason_with_passed">Malicious: %1$d, Suspicious: %2$d, Passed: %3$d</string>
     <string name="virus_total_check_failed_title">VirusTotal check failed</string>
     <string name="virus_total_api_error_reason">API error: %1$s</string>
     <string name="virus_total_api_error_reason_with_status">API error: %1$s (HTTP %2$d)</string>

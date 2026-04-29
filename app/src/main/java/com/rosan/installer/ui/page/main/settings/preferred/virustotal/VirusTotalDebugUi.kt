@@ -95,7 +95,7 @@ fun VirusTotalDebugResultDialog(
 private fun formatDebugResult(result: VirusTotalCheckResult): String = when (result) {
     is VirusTotalCheckResult.Safe -> "Safe\n" +
             "SHA-256: ${result.sha256}\n" +
-            "malicious=${result.malicious}, suspicious=${result.suspicious}, undetected=${result.undetected}\n" +
+            "Malicious=${result.malicious}, Suspicious=${result.suspicious}, Passed=${result.undetected}\n" +
             "detail=${result.detailUrl}"
 
     is VirusTotalCheckResult.Risky -> "Risky\n" +

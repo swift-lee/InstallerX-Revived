@@ -22,7 +22,7 @@ private fun VirusTotalCheckResult.toMessage(): String = when (this) {
     is VirusTotalCheckResult.Safe -> "VirusTotal reported this APK as safe"
     is VirusTotalCheckResult.Risky -> buildString {
         append("VirusTotal reported a risky APK: ")
-        append("malicious=$malicious, suspicious=$suspicious")
+        append("Malicious=$malicious, Suspicious=$suspicious")
         if (detailUrl.isNotBlank()) append("\n$detailUrl")
     }
     is VirusTotalCheckResult.ApiError -> buildString {

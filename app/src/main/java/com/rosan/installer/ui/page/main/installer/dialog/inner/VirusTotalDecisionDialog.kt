@@ -2,6 +2,10 @@
 // Copyright (C) 2026 InstallerX Revived contributors
 package com.rosan.installer.ui.page.main.installer.dialog.inner
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -9,9 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
 import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
@@ -85,17 +95,54 @@ private fun riskyVirusTotalDialog(
         WarningTextBlock(
             listOf(
                 stringResource(R.string.virus_total_risky_title) to MaterialTheme.colorScheme.error,
-                stringResource(
-                    R.string.virus_total_risky_reason_with_passed,
-                    result.malicious,
-                    result.suspicious,
-                    result.undetected,
-                ) to Color.Unspecified,
             ),
-        )
+        ) {
+            VirusTotalRiskInfoRows(result)
+        }
     },
     buttons = virusTotalRiskyButtons(viewModel, result.detailUrl),
 )
+
+@Composable
+private fun VirusTotalRiskInfoRows(result: VirusTotalCheckResult.Risky) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        VirusTotalRiskInfoRow(
+            label = stringResource(R.string.virus_total_malicious_label),
+            value = result.malicious.toString(),
+        )
+        VirusTotalRiskInfoRow(
+            label = stringResource(R.string.virus_total_suspicious_label),
+            value = result.suspicious.toString(),
+        )
+        VirusTotalRiskInfoRow(
+            label = stringResource(R.string.virus_total_passed_label),
+            value = result.undetected.toString(),
+        )
+    }
+}
+
+@Composable
+private fun VirusTotalRiskInfoRow(
+    label: String,
+    value: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = value,
+            textAlign = TextAlign.End,
+        )
+    }
+}
 
 @Composable
 private fun errorVirusTotalDialog(
