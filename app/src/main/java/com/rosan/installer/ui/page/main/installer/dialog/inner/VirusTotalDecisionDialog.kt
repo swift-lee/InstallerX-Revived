@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
 import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
@@ -87,9 +86,10 @@ private fun riskyVirusTotalDialog(
             listOf(
                 stringResource(R.string.virus_total_risky_title) to MaterialTheme.colorScheme.error,
                 stringResource(
-                    R.string.virus_total_risky_reason,
+                    R.string.virus_total_risky_reason_with_passed,
                     result.malicious,
                     result.suspicious,
+                    result.undetected,
                 ) to Color.Unspecified,
             ),
         )
@@ -124,13 +124,10 @@ private fun virusTotalRiskyButtons(
 ) {
     val uriHandler = LocalUriHandler.current
     listOf(
-        DialogButton(stringResource(R.string.cancel)) {
-            viewModel.dispatch(InstallerViewAction.ApproveVirusTotal(false))
-        },
         DialogButton(
-            text = stringResource(R.string.virus_total_continue_install),
+            text = stringResource(R.string.continue_action),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFD32F2F),
+                containerColor = Color(0xFFE60000),
                 contentColor = Color.White,
             ),
         ) {
@@ -138,6 +135,9 @@ private fun virusTotalRiskyButtons(
         },
         DialogButton(stringResource(R.string.details)) {
             if (detailUrl.isNotBlank()) uriHandler.openUri(detailUrl)
+        },
+        DialogButton(stringResource(R.string.cancel)) {
+            viewModel.dispatch(InstallerViewAction.ApproveVirusTotal(false))
         },
     )
 }

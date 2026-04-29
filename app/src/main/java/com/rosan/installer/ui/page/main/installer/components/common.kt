@@ -163,10 +163,10 @@ fun WarningTextBlock(
             modifier = modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.errorContainer)
+                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f))
                 .padding(12.dp)
         ) {
-            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onErrorContainer) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
                 warnings.forEachIndexed { index, (text, color) ->
                     if (index > 0) {
                         Spacer(modifier = Modifier.height(8.dp))

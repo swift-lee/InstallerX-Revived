@@ -172,6 +172,7 @@
     <string name="continue_action">继续</string>
     <string name="virus_total_risky_body">VirusTotal 报告此 APK 存在风险。恶意：%1$d，可疑：%2$d。详情：%3$s</string>
     <string name="virus_total_risky_reason">恶意：%1$d，可疑：%2$d</string>
+    <string name="virus_total_risky_reason_with_passed">恶意：%1$d，可疑：%2$d，通过：%3$d</string>
     <string name="virus_total_check_failed_title">VirusTotal 检查失败</string>
     <string name="virus_total_api_error_reason">API 错误：%1$s</string>
     <string name="virus_total_api_error_reason_with_status">API 错误：%1$s（HTTP %2$d）</string>
