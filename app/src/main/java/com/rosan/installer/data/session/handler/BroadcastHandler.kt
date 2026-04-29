@@ -130,7 +130,12 @@ class BroadcastHandler(scope: CoroutineScope, session: InstallerSessionRepositor
 
         private suspend fun effectiveVirusTotalEnabled(): Boolean {
             val prefs = appSettingsRepo.preferencesFlow.first()
-            return prefs.virusTotalApiKey.isNotBlank() && prefs.virusTotalMode == VirusTotalMode.Enable
+            if (prefs.virusTotalApiKey.isBlank()) return false
+            return when (prefs.virusTotalMode) {
+                VirusTotalMode.Enable -> true
+                VirusTotalMode.Disable -> false
+                VirusTotalMode.FollowConfig -> session.config.checkVirusTotal
+            }
         }
 
         private suspend fun handlePrivilegedLaunchAndFinish(context: Context) {

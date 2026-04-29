@@ -40,7 +40,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
+import com.rosan.installer.core.env.AppConfig
 import com.rosan.installer.domain.settings.model.BiometricAuthMode
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.navigation.LocalNavigator
 import com.rosan.installer.ui.page.main.widget.card.InfoTipCard
@@ -150,6 +152,8 @@ fun EditPage(
             item { DataInstallModeWidget(state = state, dispatch = dispatch) }
             if (state.globalInstallerBiometricAuthMode == BiometricAuthMode.FollowConfig)
                 item { DataRequireBiometricAuthWidget(state = state, dispatch = dispatch, isM3E = false) }
+            if (AppConfig.isInternetAccessEnabled && state.globalVirusTotalMode == VirusTotalMode.FollowConfig)
+                item { DataCheckVirusTotalWidget(state = state, dispatch = dispatch, isM3E = false) }
             item { DataShowToastWidget(state = state, dispatch = dispatch, isM3E = false) }
 
             if (isNoneActive(stateAuthorizer, globalAuthorizer))

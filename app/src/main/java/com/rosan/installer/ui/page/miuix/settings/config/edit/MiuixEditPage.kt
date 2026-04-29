@@ -33,7 +33,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
+import com.rosan.installer.core.env.AppConfig
 import com.rosan.installer.domain.settings.model.BiometricAuthMode
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.ui.navigation.LocalNavigator
 import com.rosan.installer.ui.page.main.settings.config.edit.EditViewAction
 import com.rosan.installer.ui.page.main.settings.config.edit.EditViewEvent
@@ -188,6 +190,8 @@ fun MiuixEditPage(
                     MiuixDataInstallModeWidget(state = state, dispatch = dispatch)
                     if (state.globalInstallerBiometricAuthMode == BiometricAuthMode.FollowConfig)
                         MiuixDataRequireBiometricAuthWidget(state = state, dispatch = dispatch)
+                    if (AppConfig.isInternetAccessEnabled && state.globalVirusTotalMode == VirusTotalMode.FollowConfig)
+                        MiuixDataCheckVirusTotalWidget(state = state, dispatch = dispatch)
                     MiuixShowToastWidget(state = state, dispatch = dispatch)
                 }
             }

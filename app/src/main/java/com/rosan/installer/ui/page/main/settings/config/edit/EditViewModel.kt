@@ -68,7 +68,8 @@ class EditViewModel(
             managedInstallerPackages = managedInstallerPackages,
             isCustomInstallRequesterEnabled = isCustomInstallRequesterEnabled,
             globalAuthorizer = prefs.authorizer,
-            globalInstallerBiometricAuthMode = prefs.installerRequireBiometricAuth
+            globalInstallerBiometricAuthMode = prefs.installerRequireBiometricAuth,
+            globalVirusTotalMode = prefs.virusTotalMode
         )
     }.stateIn(
         scope = viewModelScope,
@@ -120,6 +121,7 @@ class EditViewModel(
                     is EditViewAction.ChangeSplitChooseAll -> changeSplitChooseAll(action.splitChooseAll)
                     is EditViewAction.ChangeApkChooseAll -> changeApkChooseAll(action.apkChooseAll)
                     is EditViewAction.ChangeRequireBiometricAuth -> changeRequireBiometricAuth(action.require)
+                    is EditViewAction.ChangeCheckVirusTotal -> changeCheckVirusTotal(action.check)
                     is EditViewAction.LoadData -> loadData()
                     is EditViewAction.SaveData -> saveData()
                 }
@@ -310,6 +312,10 @@ class EditViewModel(
 
     private fun changeRequireBiometricAuth(require: Boolean) {
         _data.update { it.copy(requireBiometricAuth = require) }
+    }
+
+    private fun changeCheckVirusTotal(check: Boolean) {
+        _data.update { it.copy(checkVirusTotal = check) }
     }
 
     private fun loadAvailableUsers() {

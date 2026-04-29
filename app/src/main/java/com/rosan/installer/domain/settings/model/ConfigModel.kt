@@ -41,6 +41,7 @@ data class ConfigModel(
     val splitChooseAll: Boolean = false,
     val apkChooseAll: Boolean = false,
     val requireBiometricAuth: Boolean = false,
+    val checkVirusTotal: Boolean = false,
 
     val createdAt: Long = System.currentTimeMillis(),
     val modifiedAt: Long = System.currentTimeMillis(),
@@ -85,7 +86,8 @@ data class ConfigModel(
             allowAllRequestedPermissions = false,
             requestUpdateOwnership = false,
             splitChooseAll = false,
-            apkChooseAll = false
+            apkChooseAll = false,
+            checkVirusTotal = false
         )
 
         val XiaomiDefault = ConfigModel(
@@ -116,7 +118,8 @@ data class ConfigModel(
             allowAllRequestedPermissions = false,
             requestUpdateOwnership = false,
             splitChooseAll = false,
-            apkChooseAll = false
+            apkChooseAll = false,
+            checkVirusTotal = false
         )
 
         fun generateOptimalDefault(): ConfigModel =

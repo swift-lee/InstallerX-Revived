@@ -43,6 +43,7 @@ fun ConfigEntity.toDomainModel(scopeCount: Int = 0): ConfigModel {
         splitChooseAll = this.splitChooseAll,
         apkChooseAll = this.apkChooseAll,
         requireBiometricAuth = this.requireBiometricAuth,
+        checkVirusTotal = this.checkVirusTotal,
         createdAt = this.createdAt,
         modifiedAt = this.modifiedAt,
         scopeCount = scopeCount,
@@ -96,6 +97,7 @@ fun ConfigModel.toEntity(): ConfigEntity {
         splitChooseAll = this.splitChooseAll,
         apkChooseAll = this.apkChooseAll,
         requireBiometricAuth = this.requireBiometricAuth,
+        checkVirusTotal = this.checkVirusTotal,
         createdAt = this.createdAt,
         modifiedAt = this.modifiedAt
     )

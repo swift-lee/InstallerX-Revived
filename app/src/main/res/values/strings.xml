@@ -325,6 +325,8 @@
     <string name="config_dialog_title_unsaved_changes">Unsaved changes</string>
     <string name="config_dialog_message_unsaved_changes">Quit without saving?</string>
     <string name="config_follow_settings">Follow Profile</string>
+    <string name="config_virus_total_check">Check with VirusTotal</string>
+    <string name="config_virus_total_check_desc">Check APK SHA-256 with VirusTotal before installing apps from this profile</string>
     <string name="config_managed_installer_packages_title">Install Source Presets</string>
     <string name="config_managed_blacklist_by_package_name_title">Apps prohibited from installation by package name</string>
     <string name="config_managed_blacklist_by_shared_user_id_title">Apps prohibited from installation by SharedUID</string>

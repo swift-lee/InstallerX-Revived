@@ -315,6 +315,8 @@
     <string name="config_dialog_title_unsaved_changes">有未保存的修改</string>
     <string name="config_dialog_message_unsaved_changes">不保存就退出吗？</string>
     <string name="config_follow_settings">跟随配置</string>
+    <string name="config_virus_total_check">使用 VirusTotal 检查</string>
+    <string name="config_virus_total_check_desc">安装来自此配置文件的应用前，使用 VirusTotal 检查 APK SHA-256</string>
     <string name="config_managed_installer_packages_title">安装来源预设</string>
     <string name="config_managed_blacklist_by_package_name_title">根据包名禁止安装应用程序</string>
     <string name="config_managed_blacklist_by_shared_user_id_title">根据 SharedUID 禁止安装应用程序</string>

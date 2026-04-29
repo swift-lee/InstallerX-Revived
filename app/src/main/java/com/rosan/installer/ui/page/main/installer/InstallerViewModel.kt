@@ -697,8 +697,8 @@ class InstallerViewModel(
 
     fun defaultVirusTotalEnabled(state: InstallerState = uiState.value): Boolean = when (state.viewSettings.virusTotalMode) {
         VirusTotalMode.Enable -> true
-        VirusTotalMode.Disable,
-        VirusTotalMode.FollowConfig -> false
+        VirusTotalMode.Disable -> false
+        VirusTotalMode.FollowConfig -> state.config.checkVirusTotal
     }
 
     fun effectiveVirusTotalEnabled(state: InstallerState = uiState.value): Boolean {

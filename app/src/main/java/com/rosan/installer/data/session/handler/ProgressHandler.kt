@@ -77,6 +77,11 @@ class ProgressHandler(scope: CoroutineScope, session: InstallerSessionRepository
 
     private suspend fun effectiveVirusTotalEnabled(): Boolean {
         val prefs = appSettingsRepo.preferencesFlow.first()
-        return prefs.virusTotalApiKey.isNotBlank() && prefs.virusTotalMode == VirusTotalMode.Enable
+        if (prefs.virusTotalApiKey.isBlank()) return false
+        return when (prefs.virusTotalMode) {
+            VirusTotalMode.Enable -> true
+            VirusTotalMode.Disable -> false
+            VirusTotalMode.FollowConfig -> session.config.checkVirusTotal
+        }
     }
 }

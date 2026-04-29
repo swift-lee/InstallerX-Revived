@@ -12,6 +12,7 @@ import com.rosan.installer.domain.settings.model.InstallReason
 import com.rosan.installer.domain.settings.model.InstallerMode
 import com.rosan.installer.domain.settings.model.NamedPackage
 import com.rosan.installer.domain.settings.model.PackageSource
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 
 data class EditViewState(
     val data: Data = Data.build(ConfigModel.default),
@@ -22,7 +23,8 @@ data class EditViewState(
 
     // Global states integrated into the view state
     val globalAuthorizer: Authorizer = Authorizer.Global,
-    val globalInstallerBiometricAuthMode: BiometricAuthMode = BiometricAuthMode.Disable
+    val globalInstallerBiometricAuthMode: BiometricAuthMode = BiometricAuthMode.Disable,
+    val globalVirusTotalMode: VirusTotalMode = VirusTotalMode.Disable
 ) {
     // Computed property for unsaved changes
     val hasUnsavedChanges: Boolean
@@ -77,7 +79,8 @@ data class EditViewState(
         val requestUpdateOwnership: Boolean,
         val splitChooseAll: Boolean,
         val apkChooseAll: Boolean,
-        val requireBiometricAuth: Boolean
+        val requireBiometricAuth: Boolean,
+        val checkVirusTotal: Boolean
     ) {
         val errorName = name.isEmpty()// || name == "Default"
         val authorizerCustomize = authorizer == Authorizer.Customize
@@ -116,7 +119,8 @@ data class EditViewState(
             requestUpdateOwnership = this.requestUpdateOwnership,
             splitChooseAll = this.splitChooseAll,
             apkChooseAll = this.apkChooseAll,
-            requireBiometricAuth = this.requireBiometricAuth
+            requireBiometricAuth = this.requireBiometricAuth,
+            checkVirusTotal = this.checkVirusTotal
         )
 
         companion object {
@@ -153,7 +157,8 @@ data class EditViewState(
                 requestUpdateOwnership = config.requestUpdateOwnership,
                 splitChooseAll = config.splitChooseAll,
                 apkChooseAll = config.apkChooseAll,
-                requireBiometricAuth = config.requireBiometricAuth
+                requireBiometricAuth = config.requireBiometricAuth,
+                checkVirusTotal = config.checkVirusTotal
             )
         }
     }

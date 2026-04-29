@@ -715,3 +715,13 @@ fun MiuixDataRequireBiometricAuthWidget(state: EditViewState, dispatch: (EditVie
         onCheckedChange = { dispatch(EditViewAction.ChangeRequireBiometricAuth(it)) }
     )
 }
+
+@Composable
+fun MiuixDataCheckVirusTotalWidget(state: EditViewState, dispatch: (EditViewAction) -> Unit) {
+    MiuixSwitchWidget(
+        title = stringResource(id = R.string.config_virus_total_check),
+        description = stringResource(id = R.string.config_virus_total_check_desc),
+        checked = state.data.checkVirusTotal,
+        onCheckedChange = { dispatch(EditViewAction.ChangeCheckVirusTotal(it)) }
+    )
+}
