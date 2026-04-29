@@ -18,7 +18,8 @@ import com.rosan.installer.R
 import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction
 import com.rosan.installer.ui.page.main.installer.InstallerViewModel
-import com.rosan.installer.ui.page.main.installer.components.ErrorTextBlock
+import com.rosan.installer.framework.notification.builder.virusTotalNotificationText
+import com.rosan.installer.framework.notification.builder.virusTotalNotificationTitle
 import com.rosan.installer.ui.page.main.installer.components.WarningTextBlock
 import com.rosan.installer.ui.page.main.installer.components.workingIcon
 import com.rosan.installer.ui.page.main.installer.dialog.DialogButton
@@ -84,12 +85,12 @@ private fun riskyVirusTotalDialog(
     text = DialogInnerParams(DialogParamsType.InstallerVirusTotalBlocked.id) {
         WarningTextBlock(
             listOf(
+                stringResource(R.string.virus_total_risky_title) to MaterialTheme.colorScheme.error,
                 stringResource(
-                    R.string.virus_total_risky_body,
+                    R.string.virus_total_risky_reason,
                     result.malicious,
                     result.suspicious,
-                    result.detailUrl,
-                ) to MaterialTheme.colorScheme.error,
+                ) to Color.Unspecified,
             ),
         )
     },
@@ -103,8 +104,12 @@ private fun errorVirusTotalDialog(
     viewModel: InstallerViewModel,
 ): DialogParams = baseParams.copy(
     text = DialogInnerParams(DialogParamsType.InstallerVirusTotalBlocked.id) {
-        ErrorTextBlock(
-            com.rosan.installer.domain.virustotal.exception.VirusTotalCheckException(result),
+        val context = androidx.compose.ui.platform.LocalContext.current
+        WarningTextBlock(
+            listOf(
+                result.virusTotalNotificationTitle(context) to MaterialTheme.colorScheme.error,
+                result.virusTotalNotificationText(context) to Color.Unspecified,
+            ),
         )
     },
     buttons = virusTotalErrorButtons(viewModel),

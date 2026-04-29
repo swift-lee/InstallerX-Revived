@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
 import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
+import com.rosan.installer.framework.notification.builder.virusTotalNotificationText
+import com.rosan.installer.framework.notification.builder.virusTotalNotificationTitle
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction
 import com.rosan.installer.ui.page.main.installer.InstallerViewModel
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
@@ -41,17 +43,8 @@ fun VirusTotalBlockedContent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = when (result) {
-                is VirusTotalCheckResult.Risky -> stringResource(
-                    R.string.virus_total_risky_body,
-                    result.malicious,
-                    result.suspicious,
-                    result.detailUrl,
-                )
-                is VirusTotalCheckResult.ApiError -> result.message
-                is VirusTotalCheckResult.NetworkError -> result.message
-                else -> stringResource(R.string.virus_total_check_failed_title)
-            },
+            text = result.virusTotalNotificationTitle(androidx.compose.ui.platform.LocalContext.current) + "\n" +
+                result.virusTotalNotificationText(androidx.compose.ui.platform.LocalContext.current),
             style = MaterialTheme.typography.bodyLarge,
             color = if (result is VirusTotalCheckResult.Risky) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
         )

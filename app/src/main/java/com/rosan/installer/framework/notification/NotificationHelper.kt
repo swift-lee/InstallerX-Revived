@@ -34,6 +34,16 @@ class NotificationHelper(
     val installIntent: PendingIntent = BroadcastHandler.Companion.namedIntent(context, session, BroadcastHandler.Name.Install)
     val cancelIntent: PendingIntent = BroadcastHandler.Companion.namedIntent(context, session, BroadcastHandler.Name.Cancel)
     val finishIntent: PendingIntent = BroadcastHandler.Companion.namedIntent(context, session, BroadcastHandler.Name.Finish)
+    val approveVirusTotalIntent: PendingIntent = BroadcastHandler.Companion.namedIntent(
+        context,
+        session,
+        BroadcastHandler.Name.ApproveVirusTotal
+    )
+    val cancelVirusTotalIntent: PendingIntent = BroadcastHandler.Companion.namedIntent(
+        context,
+        session,
+        BroadcastHandler.Name.CancelVirusTotal
+    )
 
     // Resolve specific launch intent considering privileged access
     fun getLaunchPendingIntent(packageName: String?): PendingIntent? {

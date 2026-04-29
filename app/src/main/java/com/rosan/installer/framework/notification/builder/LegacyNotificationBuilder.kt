@@ -37,6 +37,8 @@ class LegacyNotificationBuilder(
             is ProgressEntity.InstallResolveSuccess -> onResolveSuccess(builder)
             is ProgressEntity.InstallPreparing -> onPreparing(builder, progress)
             is ProgressEntity.InstallAnalysing -> onAnalysing(builder)
+            is ProgressEntity.VirusTotalChecking -> onVirusTotalChecking(builder)
+            is ProgressEntity.VirusTotalBlocked -> onVirusTotalBlocked(builder).build()
             is ProgressEntity.InstallAnalysedFailed -> onAnalysedFailed(builder)
             is ProgressEntity.InstallAnalysedSuccess -> onAnalysedSuccess(builder, preferSystemIcon)
             is ProgressEntity.Installing -> onInstalling(builder, progress, preferSystemIcon)
@@ -50,9 +52,9 @@ class LegacyNotificationBuilder(
 
     private fun createBaseBuilder(progress: ProgressEntity, background: Boolean, showDialog: Boolean): NotificationCompat.Builder {
         val isWorking =
-            progress is ProgressEntity.Ready || progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallResolveSuccess || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.Installing || progress is ProgressEntity.InstallingModule || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
+            progress is ProgressEntity.Ready || progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallResolveSuccess || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalChecking || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.Installing || progress is ProgressEntity.InstallingModule || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
         val isImportance =
-            progress is ProgressEntity.InstallResolvedFailed || progress is ProgressEntity.InstallAnalysedFailed || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.InstallFailed || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
+            progress is ProgressEntity.InstallResolvedFailed || progress is ProgressEntity.InstallAnalysedFailed || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.VirusTotalBlocked || progress is ProgressEntity.InstallFailed || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
 
         val channelEnum =
             if (isImportance && background) NotificationHelper.Channel.InstallerChannel else NotificationHelper.Channel.InstallerProgressChannel
@@ -72,6 +74,7 @@ class LegacyNotificationBuilder(
         val legacyProgressValue = when (progress) {
             is ProgressEntity.InstallResolving -> 0
             is ProgressEntity.InstallAnalysing -> 40
+            is ProgressEntity.VirusTotalChecking -> 45
             is ProgressEntity.Installing -> 50 + (40 * (if (progress.total > 0) progress.current.toFloat() / progress.total.toFloat() else 0.5f)).toInt()
             is ProgressEntity.InstallingModule -> 70
             else -> null
@@ -104,6 +107,24 @@ class LegacyNotificationBuilder(
 
     private fun onAnalysing(builder: NotificationCompat.Builder) =
         builder.setContentTitle(context.getString(R.string.installer_analysing)).build()
+
+    private fun onVirusTotalChecking(builder: NotificationCompat.Builder) =
+        builder.setContentTitle(context.getString(R.string.virus_total_checking_install))
+            .setContentText(context.getString(R.string.virus_total_scanning))
+            .setProgress(100, 45, true)
+            .build()
+
+    private fun onVirusTotalBlocked(builder: NotificationCompat.Builder): NotificationCompat.Builder {
+        val result = session.virusTotalResult.value
+        val text = result.virusTotalNotificationText(context)
+        return builder.setContentTitle(result.virusTotalNotificationTitle(context))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setOngoing(true)
+            .setOnlyAlertOnce(false)
+            .addAction(0, context.getString(R.string.virus_total_continue_install), helper.approveVirusTotalIntent)
+            .addAction(0, context.getString(R.string.virus_total_cancel_install), helper.cancelVirusTotalIntent)
+    }
 
     private fun onAnalysedFailed(builder: NotificationCompat.Builder) =
         builder.setContentTitle(context.getString(R.string.installer_analyse_failed))

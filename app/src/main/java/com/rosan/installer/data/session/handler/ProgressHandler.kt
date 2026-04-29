@@ -5,14 +5,20 @@ package com.rosan.installer.data.session.handler
 import com.rosan.installer.domain.session.model.ProgressEntity
 import com.rosan.installer.domain.session.repository.InstallerSessionRepository
 import com.rosan.installer.domain.settings.model.InstallMode
+import com.rosan.installer.domain.settings.model.VirusTotalMode
+import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import timber.log.Timber
 
 class ProgressHandler(scope: CoroutineScope, session: InstallerSessionRepository) :
-    Handler(scope, session) {
+    Handler(scope, session), KoinComponent {
 
+    private val appSettingsRepo by inject<AppSettingsRepository>()
     private var job: Job? = null
 
     override suspend fun onStart() {
@@ -49,7 +55,7 @@ class ProgressHandler(scope: CoroutineScope, session: InstallerSessionRepository
         }
     }
 
-    private fun onAnalysedSuccess() {
+    private suspend fun onAnalysedSuccess() {
         Timber.d("[id=${session.id}] onAnalysedSuccess called.")
         val installMode = session.config.installMode
         if (installMode != InstallMode.AutoDialog && installMode != InstallMode.AutoNotification) {
@@ -66,6 +72,11 @@ class ProgressHandler(scope: CoroutineScope, session: InstallerSessionRepository
         }
 
         Timber.d("[id=${session.id}] onAnalysedSuccess: Auto-install conditions met. Triggering install().")
-        session.install(triggerAuth = true, checkVirusTotal = false)
+        session.install(triggerAuth = true, checkVirusTotal = effectiveVirusTotalEnabled())
+    }
+
+    private suspend fun effectiveVirusTotalEnabled(): Boolean {
+        val prefs = appSettingsRepo.preferencesFlow.first()
+        return prefs.virusTotalApiKey.isNotBlank() && prefs.virusTotalMode == VirusTotalMode.Enable
     }
 }

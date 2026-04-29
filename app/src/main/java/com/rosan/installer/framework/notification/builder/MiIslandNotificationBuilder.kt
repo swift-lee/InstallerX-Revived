@@ -93,6 +93,25 @@ class MiIslandNotificationBuilder(
                 actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.cancel), helper.finishIntent))
             }
 
+            is ProgressEntity.VirusTotalChecking -> {
+                title = context.getString(R.string.virus_total_checking_install)
+                shortText = context.getString(R.string.virus_total_scanning)
+                contentText = context.getString(R.string.virus_total_scanning)
+                isOngoing = true
+                showAppIcon = false
+                actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.virus_total_cancel_install), helper.cancelVirusTotalIntent))
+            }
+
+            is ProgressEntity.VirusTotalBlocked -> {
+                val result = session.virusTotalResult.value
+                title = result.virusTotalNotificationTitle(context)
+                shortText = context.getString(R.string.virus_total_check_failed_title)
+                contentText = result.virusTotalNotificationText(context)
+                showAppIcon = false
+                actionsList.add(IslandAction("miui_action_cancel_vt", context.getString(R.string.virus_total_cancel_install), helper.cancelVirusTotalIntent))
+                actionsList.add(IslandAction("miui_action_continue_vt", context.getString(R.string.virus_total_continue_install), helper.approveVirusTotalIntent, true))
+            }
+
             is ProgressEntity.InstallAnalysedSuccess -> {
                 val allEntities = session.analysisResults.flatMap { it.appEntities }
                 val selectedApps = allEntities.map { it.app }
@@ -344,9 +363,9 @@ class MiIslandNotificationBuilder(
 
     private fun createBaseBuilder(progress: ProgressEntity, background: Boolean, showDialog: Boolean): NotificationCompat.Builder {
         val isWorking =
-            progress is ProgressEntity.Ready || progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallResolveSuccess || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.Installing || progress is ProgressEntity.InstallingModule || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
+            progress is ProgressEntity.Ready || progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallResolveSuccess || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalChecking || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.Installing || progress is ProgressEntity.InstallingModule || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
         val isImportance =
-            progress is ProgressEntity.InstallResolvedFailed || progress is ProgressEntity.InstallAnalysedFailed || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.InstallFailed || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
+            progress is ProgressEntity.InstallResolvedFailed || progress is ProgressEntity.InstallAnalysedFailed || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.VirusTotalBlocked || progress is ProgressEntity.InstallFailed || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
 
         val channelEnum =
             if (isImportance && background) NotificationHelper.Channel.InstallerChannel else NotificationHelper.Channel.InstallerProgressChannel

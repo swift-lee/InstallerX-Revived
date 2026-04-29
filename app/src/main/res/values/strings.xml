@@ -169,7 +169,12 @@
     <string name="virus_total_scanning">Scanning…</string>
     <string name="virus_total_risky_title">VirusTotal warning</string>
     <string name="virus_total_risky_body">VirusTotal reported this APK as risky. Malicious: %1$d, suspicious: %2$d. Details: %3$s</string>
+    <string name="virus_total_risky_reason">Malicious: %1$d, suspicious: %2$d</string>
     <string name="virus_total_check_failed_title">VirusTotal check failed</string>
+    <string name="virus_total_api_error_reason">API error: %1$s</string>
+    <string name="virus_total_api_error_reason_with_status">API error: %1$s (HTTP %2$d)</string>
+    <string name="virus_total_network_error_reason">Network error: %1$s</string>
+    <string name="virus_total_cancel_install">Cancel install</string>
     <string name="virus_total_continue_install">Continue install</string>
     <string name="virus_total_cancelled">VirusTotal check was cancelled</string>
     <string name="uninstaller_settings_require_biometric_auth">Require Biometric Auth to Uninstall</string>

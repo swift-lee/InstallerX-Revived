@@ -11,7 +11,10 @@ import com.rosan.installer.data.session.util.pendingActivity
 import com.rosan.installer.data.session.util.pendingBroadcast
 import com.rosan.installer.domain.privileged.usecase.OpenAppUseCase
 import com.rosan.installer.domain.session.repository.InstallerSessionRepository
+import com.rosan.installer.domain.settings.model.VirusTotalMode
+import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.ui.activity.InstallerActivity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -55,6 +58,7 @@ class BroadcastHandler(scope: CoroutineScope, session: InstallerSessionRepositor
 
     private val context by inject<Context>()
     private val openAppUseCase by inject<OpenAppUseCase>()
+    private val appSettingsRepo by inject<AppSettingsRepository>()
 
     private val receiver = Receiver()
 
@@ -109,14 +113,24 @@ class BroadcastHandler(scope: CoroutineScope, session: InstallerSessionRepositor
         private suspend fun doWork(context: Context, name: Name) {
             when (name) {
                 Name.Analyse -> session.analyse()
-                Name.Install -> session.install(triggerAuth = true, checkVirusTotal = false)
+                Name.Install -> session.install(
+                    triggerAuth = true,
+                    checkVirusTotal = effectiveVirusTotalEnabled()
+                )
                 Name.Finish -> session.close()
                 Name.Cancel -> session.cancel()
+                Name.ApproveVirusTotal -> session.approveVirusTotal(continueInstall = true)
+                Name.CancelVirusTotal -> session.approveVirusTotal(continueInstall = false)
                 Name.PrivilegedLaunchAndFinish -> handlePrivilegedLaunchAndFinish(context)
                 else -> {
                     Timber.d("[id=${session.id}] Receiver: No action for broadcast name: $name")
                 }
             }
+        }
+
+        private suspend fun effectiveVirusTotalEnabled(): Boolean {
+            val prefs = appSettingsRepo.preferencesFlow.first()
+            return prefs.virusTotalApiKey.isNotBlank() && prefs.virusTotalMode == VirusTotalMode.Enable
         }
 
         private suspend fun handlePrivilegedLaunchAndFinish(context: Context) {
@@ -144,6 +158,8 @@ class BroadcastHandler(scope: CoroutineScope, session: InstallerSessionRepositor
         Install("install"),
         Finish("finish"),
         Cancel("cancel"),
+        ApproveVirusTotal("approve_virus_total"),
+        CancelVirusTotal("cancel_virus_total"),
         Launch("launch"),
         PrivilegedLaunchAndFinish("privileged_launch_and_finish");
 
