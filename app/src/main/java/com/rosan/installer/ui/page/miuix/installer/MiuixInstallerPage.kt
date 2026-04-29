@@ -164,6 +164,7 @@ fun MiuixInstallerPage(
         is InstallerStage.InstallCompleted -> stringResource(R.string.installer_install_success)
         is InstallerStage.InstallSuccess -> stringResource(R.string.installer_install_success)
         is InstallerStage.InstallFailed -> stringResource(R.string.installer_install_failed)
+        is InstallerStage.VirusTotalBlocked -> stringResource(R.string.virus_total_risky_app)
         is InstallerStage.UninstallReady -> stringResource(R.string.installer_uninstall_app)
         is InstallerStage.Uninstalling -> stringResource(R.string.installer_uninstalling)
         is InstallerStage.UninstallSuccess -> stringResource(R.string.uninstall_success_message)

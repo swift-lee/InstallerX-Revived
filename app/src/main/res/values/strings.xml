@@ -168,6 +168,14 @@
     <string name="virus_total_checking_install">Checking with VirusTotal…</string>
     <string name="virus_total_scanning">Scanning…</string>
     <string name="virus_total_risky_title">VirusTotal warning</string>
+    <string name="virus_total_risky_app">Risky App</string>
+    <string name="virus_total_risky_miuix_message">VirusTotal reported this file as risky.</string>
+    <string name="virus_total_report_prompt">Please check:</string>
+    <string name="virus_total_malicious_label">Malicious:</string>
+    <string name="virus_total_suspicious_label">Suspicious:</string>
+    <string name="virus_total_passed_label">Passed:</string>
+    <string name="virus_total_check_on_virustotal">Check on VirusTotal</string>
+    <string name="continue_action">Continue</string>
     <string name="virus_total_risky_body">VirusTotal reported this APK as risky. Malicious: %1$d, suspicious: %2$d. Details: %3$s</string>
     <string name="virus_total_risky_reason">Malicious: %1$d, suspicious: %2$d</string>
     <string name="virus_total_check_failed_title">VirusTotal check failed</string>
