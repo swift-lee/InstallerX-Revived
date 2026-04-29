@@ -162,6 +162,9 @@
     <string name="virus_total_debug_checking">Querying VirusTotal…</string>
     <string name="virus_total_debug_sha256">SHA-256</string>
     <string name="virus_total_debug_result">VirusTotal result</string>
+    <string name="virus_total_install_check">Check with VirusTotal</string>
+    <string name="virus_total_install_check_desc">Query this APK hash before installing</string>
+    <string name="virus_total_install_check_no_api_key">Configure a VirusTotal API key to enable this check</string>
     <string name="uninstaller_settings_require_biometric_auth">Require Biometric Auth to Uninstall</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">Require biometric auth when uninstalling</string>
     <string name="use_biometric_confirm_change_auth_settings">Are you sure you want to change this setting</string>

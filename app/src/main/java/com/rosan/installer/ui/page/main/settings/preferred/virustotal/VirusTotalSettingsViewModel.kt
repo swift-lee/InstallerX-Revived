@@ -4,6 +4,7 @@ package com.rosan.installer.ui.page.main.settings.preferred.virustotal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.StringSetting
 import com.rosan.installer.domain.settings.usecase.settings.UpdateSettingUseCase
@@ -43,11 +44,16 @@ class VirusTotalSettingsViewModel(
     fun dispatch(action: VirusTotalSettingsAction) {
         when (action) {
             is VirusTotalSettingsAction.ChangeMode -> viewModelScope.launch {
-                updateSetting(StringSetting.VirusTotalMode, action.mode.value)
+                val nextMode = if (state.value.apiKey.isBlank()) VirusTotalMode.Disable else action.mode
+                updateSetting(StringSetting.VirusTotalMode, nextMode.value)
             }
 
             is VirusTotalSettingsAction.ChangeApiKey -> viewModelScope.launch {
-                updateSetting(StringSetting.VirusTotalApiKey, action.apiKey)
+                val apiKey = action.apiKey.trim()
+                updateSetting(StringSetting.VirusTotalApiKey, apiKey)
+                if (apiKey.isBlank()) {
+                    updateSetting(StringSetting.VirusTotalMode, VirusTotalMode.Disable.value)
+                }
             }
 
             is VirusTotalSettingsAction.ChangeEndpoint -> viewModelScope.launch {

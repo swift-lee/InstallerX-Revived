@@ -40,8 +40,8 @@ interface InstallerSessionRepository : Closeable {
      * Request Do Package/Module Install
      * @param triggerAuth request or not request user biometric auth
      */
-    fun install(triggerAuth: Boolean)
-    fun installMultiple(entities: List<SelectInstallEntity>)
+    fun install(triggerAuth: Boolean, checkVirusTotal: Boolean)
+    fun installMultiple(entities: List<SelectInstallEntity>, checkVirusTotal: Boolean)
 
     /**
      * Resolves information for a package to be uninstalled.

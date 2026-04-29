@@ -22,7 +22,7 @@ sealed class InstallerViewAction {
      * **This ViewAction will forward to ActionHandler to actually process**
      * @see com.rosan.installer.data.session.repository.InstallerSessionRepositoryImpl.Action.InstallMultiple
      */
-    data object InstallMultiple : InstallerViewAction()
+    data class InstallMultiple(val checkVirusTotal: Boolean) : InstallerViewAction()
     data object InstallPrepare : InstallerViewAction()
 
     /**
@@ -33,7 +33,7 @@ sealed class InstallerViewAction {
      * @param triggerAuth request or not request user biometric auth
      * @see com.rosan.installer.data.session.repository.InstallerSessionRepositoryImpl.Action.Install
      */
-    data class Install(val triggerAuth: Boolean) : InstallerViewAction()
+    data class Install(val triggerAuth: Boolean, val checkVirusTotal: Boolean) : InstallerViewAction()
     data object Background : InstallerViewAction()
     data object Cancel : InstallerViewAction()
     data class Reboot(val reason: String) : InstallerViewAction()
@@ -48,6 +48,7 @@ sealed class InstallerViewAction {
     data class SetTempShowOPPOSpecial(val show: Boolean) : InstallerViewAction()
     data class SetTempLabShowFilePath(val show: Boolean) : InstallerViewAction()           // 新增 Action
     data class SetTempLabShowInstallInitiator(val show: Boolean) : InstallerViewAction()
+    data class SetTempVirusTotalEnabled(val enabled: Boolean) : InstallerViewAction()
 
     /**
      * Toggles the selection state of the current app.

@@ -327,6 +327,7 @@ fun installPrepareDialog(
                     item {
                         WarningTextBlock(listOf(Pair(stringResource(R.string.installer_splits_invalid_tip), MaterialTheme.colorScheme.error)))
                     }
+
             }
         },
         buttons = dialogButtons(
@@ -370,14 +371,24 @@ fun installPrepareDialog(
                             weight = 1f,
                             onLongClick = {
                                 // Trigger install directly
-                                viewModel.dispatch(InstallerViewAction.Install(true))
+                                viewModel.dispatch(
+                                    InstallerViewAction.Install(
+                                        triggerAuth = true,
+                                        checkVirusTotal = viewModel.effectiveVirusTotalEnabled(uiState)
+                                    )
+                                )
                                 // Force background auto silent install regardless of settings
                                 if (!viewModel.isInstallingModule) {
                                     viewModel.dispatch(InstallerViewAction.Background)
                                 }
                             },
                             onClick = {
-                                viewModel.dispatch(InstallerViewAction.Install(true))
+                                viewModel.dispatch(
+                                    InstallerViewAction.Install(
+                                        triggerAuth = true,
+                                        checkVirusTotal = viewModel.effectiveVirusTotalEnabled(uiState)
+                                    )
+                                )
                                 if (settings.autoSilentInstall && !viewModel.isInstallingModule)
                                     viewModel.dispatch(InstallerViewAction.Background)
                             }

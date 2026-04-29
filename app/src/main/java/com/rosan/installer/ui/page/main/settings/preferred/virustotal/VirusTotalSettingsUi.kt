@@ -237,6 +237,7 @@ private fun VirusTotalSettingsPage(
                     item {
                         VirusTotalModeWidget(
                             currentMode = uiState.mode,
+                            enabled = uiState.apiKey.isNotBlank(),
                             onModeChange = { viewModel.dispatch(VirusTotalSettingsAction.ChangeMode(it)) }
                         )
                     }
@@ -268,6 +269,7 @@ private fun VirusTotalSettingsPage(
 @Composable
 private fun VirusTotalModeWidget(
     currentMode: VirusTotalMode,
+    enabled: Boolean,
     onModeChange: (VirusTotalMode) -> Unit
 ) {
     val modes = remember {
@@ -294,7 +296,8 @@ private fun VirusTotalModeWidget(
     DropDownMenuWidget(
         icon = AppIcons.Security,
         title = stringResource(R.string.virus_total_global_mode),
-        description = description,
+        description = if (enabled) description else stringResource(R.string.virus_total_api_key_not_configured),
+        enabled = enabled,
         choice = selectedIndex,
         data = options,
         onChoiceChange = { index ->
@@ -470,7 +473,8 @@ private fun MiuixVirusTotalSettingsPage(
 
                     WindowSpinnerPreference(
                         title = stringResource(R.string.virus_total_global_mode),
-                        summary = summary,
+                        summary = if (uiState.apiKey.isNotBlank()) summary else stringResource(R.string.virus_total_api_key_not_configured),
+                        enabled = uiState.apiKey.isNotBlank(),
                         items = entries,
                         selectedIndex = selectedIndex,
                         onSelectedIndexChange = { index ->

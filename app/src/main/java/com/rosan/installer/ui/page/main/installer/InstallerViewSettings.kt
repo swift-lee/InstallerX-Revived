@@ -2,6 +2,8 @@
 // Copyright (C) 2025-2026 InstallerX Revived contributors
 package com.rosan.installer.ui.page.main.installer
 
+import com.rosan.installer.domain.settings.model.VirusTotalMode
+
 data class InstallerViewSettings(
     val uiExpressive: Boolean = true,
     val useBlur: Boolean = true,
@@ -16,6 +18,8 @@ data class InstallerViewSettings(
     val autoSilentInstall: Boolean = false,
     val enableModuleInstall: Boolean = false,
     val useDynColorFollowPkgIcon: Boolean = false,
+    val virusTotalMode: VirusTotalMode = VirusTotalMode.Disable,
+    val virusTotalApiKey: String = "",
     // Lab
     val labTapIconToShare: Boolean = false,
     val labShowFilePath: Boolean = false,

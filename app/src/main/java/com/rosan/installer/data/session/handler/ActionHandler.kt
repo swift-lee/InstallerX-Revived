@@ -201,8 +201,8 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
         when (action) {
             is InstallerSessionRepositoryImpl.Action.ResolveInstall -> resolve(action.activity)
             is InstallerSessionRepositoryImpl.Action.Analyse -> analyse()
-            is InstallerSessionRepositoryImpl.Action.Install -> handleSingleInstall(action.triggerAuth)
-            is InstallerSessionRepositoryImpl.Action.InstallMultiple -> handleMultiInstall()
+            is InstallerSessionRepositoryImpl.Action.Install -> handleSingleInstall(action.triggerAuth, action.checkVirusTotal)
+            is InstallerSessionRepositoryImpl.Action.InstallMultiple -> handleMultiInstall(action.checkVirusTotal)
             is InstallerSessionRepositoryImpl.Action.ResolveUninstall -> resolveUninstall(action.activity, action.packageName)
             is InstallerSessionRepositoryImpl.Action.Uninstall -> uninstall(action.packageName)
             is InstallerSessionRepositoryImpl.Action.ResolveConfirmInstall -> resolveConfirm(action.activity, action.sessionId)
@@ -338,16 +338,18 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
         )
     }
 
-    private suspend fun handleSingleInstall(triggerAuth: Boolean) {
+    private suspend fun handleSingleInstall(triggerAuth: Boolean, checkVirusTotal: Boolean) {
         if (triggerAuth) {
             requestUserBiometricAuthentication(true)
         }
+        Timber.d("[id=$sessionId] install: VirusTotal check requested=$checkVirusTotal")
         session.moduleLog = emptyList()
         performInstallLogic()
     }
 
-    private suspend fun handleMultiInstall() {
+    private suspend fun handleMultiInstall(checkVirusTotal: Boolean) {
         requestUserBiometricAuthentication(true)
+        Timber.d("[id=$sessionId] multi install: VirusTotal check requested=$checkVirusTotal")
         val queue = session.multiInstallQueue
         if (queue.isEmpty()) return
 

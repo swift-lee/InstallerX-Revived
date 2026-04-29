@@ -511,7 +511,12 @@ fun MiuixInstallerPage(
                                             appInfo = appInfoState,
                                             onCancel = closeSheet,
                                             onInstall = {
-                                                viewModel.dispatch(InstallerViewAction.Install(true))
+                                                viewModel.dispatch(
+                                                    InstallerViewAction.Install(
+                                                        triggerAuth = true,
+                                                        checkVirusTotal = viewModel.effectiveVirusTotalEnabled(uiState)
+                                                    )
+                                                )
                                                 if (settings.autoSilentInstall && !viewModel.isInstallingModule) {
                                                     showBottomSheet.value = false
                                                     scope.launch {
@@ -522,7 +527,12 @@ fun MiuixInstallerPage(
                                             },
                                             onLongInstall = {
                                                 // Trigger install directly
-                                                viewModel.dispatch(InstallerViewAction.Install(true))
+                                                viewModel.dispatch(
+                                                    InstallerViewAction.Install(
+                                                        triggerAuth = true,
+                                                        checkVirusTotal = viewModel.effectiveVirusTotalEnabled(uiState)
+                                                    )
+                                                )
                                                 // Force background auto silent install regardless of settings
                                                 if (!viewModel.isInstallingModule) {
                                                     showBottomSheet.value = false

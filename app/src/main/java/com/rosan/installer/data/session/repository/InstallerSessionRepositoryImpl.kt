@@ -56,18 +56,18 @@ class InstallerSessionRepositoryImpl(
         action.tryEmit(Action.Analyse)
     }
 
-    override fun install(triggerAuth: Boolean) {
-        Timber.d("[id=$id] install() called. Emitting Action.Install.")
-        action.tryEmit(Action.Install(triggerAuth))
+    override fun install(triggerAuth: Boolean, checkVirusTotal: Boolean) {
+        Timber.d("[id=$id] install() called. checkVirusTotal=$checkVirusTotal. Emitting Action.Install.")
+        action.tryEmit(Action.Install(triggerAuth, checkVirusTotal))
     }
 
-    override fun installMultiple(entities: List<SelectInstallEntity>) {
-        Timber.d("[id=$id] installMultiple() called. Queue size: ${entities.size}")
+    override fun installMultiple(entities: List<SelectInstallEntity>, checkVirusTotal: Boolean) {
+        Timber.d("[id=$id] installMultiple() called. Queue size: ${entities.size}, checkVirusTotal=$checkVirusTotal")
         multiInstallQueue = entities
         multiInstallResults.clear()
         currentMultiInstallIndex = 0
 
-        action.tryEmit(Action.InstallMultiple)
+        action.tryEmit(Action.InstallMultiple(checkVirusTotal))
     }
 
     override fun resolveUninstall(activity: Activity, packageName: String) {
@@ -142,7 +142,7 @@ class InstallerSessionRepositoryImpl(
          * @see com.rosan.installer.ui.page.main.installer.InstallerViewAction.Install
          * @see com.rosan.installer.data.session.handler.ActionHandler.handleSingleInstall
          */
-        data class Install(val triggerAuth: Boolean) : Action()
+        data class Install(val triggerAuth: Boolean, val checkVirusTotal: Boolean) : Action()
 
         /**
          * Install multiple module/apk
@@ -151,7 +151,7 @@ class InstallerSessionRepositoryImpl(
          * @see com.rosan.installer.ui.page.main.installer.InstallerViewAction.InstallMultiple
          * @see com.rosan.installer.data.session.handler.ActionHandler.handleMultiInstall
          */
-        data object InstallMultiple : Action()
+        data class InstallMultiple(val checkVirusTotal: Boolean) : Action()
         data class ResolveUninstall(val activity: Activity, val packageName: String) : Action()
         data class Uninstall(val packageName: String) : Action()
         data class ResolveConfirmInstall(val activity: Activity, val sessionId: Int) : Action()

@@ -26,6 +26,7 @@ data class InstallerState(
     val tempShowOPPOSpecial: Boolean? = null,
     val tempLabShowFilePath: Boolean? = null,
     val tempLabShowInstallInitiator: Boolean? = null,
+    val tempVirusTotalEnabled: Boolean? = null,
 
     // Visual data
     val currentPackageName: String? = null,

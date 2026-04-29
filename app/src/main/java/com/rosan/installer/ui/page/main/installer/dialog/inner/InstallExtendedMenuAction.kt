@@ -8,6 +8,7 @@ sealed class InstallExtendedMenuAction {
     data object CustomizeInstallerMode : InstallExtendedMenuAction()
     data object CustomizeInstaller : InstallExtendedMenuAction()
     data object CustomizeUser : InstallExtendedMenuAction()
+    data object VirusTotalCheck : InstallExtendedMenuAction()
     data object InstallOption : InstallExtendedMenuAction()
     data object TextField : InstallExtendedMenuAction()
 }

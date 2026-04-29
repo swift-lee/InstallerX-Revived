@@ -66,7 +66,7 @@ fun rememberErrorSuggestions(
                         icon = AppIcons.BugReport,
                         onClick = {
                             viewModel.toggleInstallFlag(InstallOption.AllowTest.value, true)
-                            viewModel.dispatch(InstallerViewAction.Install(false))
+                            viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false))
                         }
                     )
                 )
@@ -150,7 +150,7 @@ fun rememberErrorSuggestions(
                         icon = AppIcons.Delete,
                         onClick = {
                             viewModel.toggleInstallFlag(InstallOption.AllowDowngrade.value, true)
-                            viewModel.dispatch(InstallerViewAction.Install(false))
+                            viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false))
                         }
                     )
                 )
@@ -172,7 +172,7 @@ fun rememberErrorSuggestions(
                                         callingFromUid = null
                                     )
                                 }
-                                viewModel.dispatch(InstallerViewAction.Install(false))
+                                viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false))
                             }
                         )
                     )
@@ -191,7 +191,7 @@ fun rememberErrorSuggestions(
                                         authorizer = Authorizer.Shizuku
                                     )
                                 }
-                                viewModel.dispatch(InstallerViewAction.Install(false))
+                                viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false))
                             }
                         )
                     )
@@ -226,7 +226,7 @@ fun rememberErrorSuggestions(
                         icon = AppIcons.InstallBypassLowTargetSdk,
                         onClick = {
                             viewModel.toggleInstallFlag(InstallOption.BypassLowTargetSdkBlock.value, true)
-                            viewModel.dispatch(InstallerViewAction.Install(false))
+                            viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false))
                         }
                     )
                 )
@@ -240,7 +240,7 @@ fun rememberErrorSuggestions(
                         icon = AppIcons.BugReport,
                         onClick = {
                             viewModel.toggleBypassBlacklist(true)
-                            viewModel.dispatch(InstallerViewAction.Install(false))
+                            viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false))
                         }
                     )
                 )
@@ -252,7 +252,7 @@ fun rememberErrorSuggestions(
                         labelRes = R.string.retry,
                         descriptionRes = R.string.suggestion_retry_install_desc,
                         icon = AppIcons.Retry,
-                        onClick = { viewModel.dispatch(InstallerViewAction.Install(false)) }
+                        onClick = { viewModel.dispatch(InstallerViewAction.Install(triggerAuth = false, checkVirusTotal = false)) }
                     )
                 )
             }

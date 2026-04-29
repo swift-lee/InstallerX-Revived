@@ -102,7 +102,7 @@ fun installChoiceDialog(
 
     val primaryButtonText = if (isMultiApk) R.string.install else R.string.next
     val primaryButtonAction = if (isMultiApk) {
-        { if (isPrimaryActionEnabled) viewModel.dispatch(InstallerViewAction.InstallMultiple) }
+        { if (isPrimaryActionEnabled) viewModel.dispatch(InstallerViewAction.InstallMultiple(false)) }
     } else {
         { if (isPrimaryActionEnabled) viewModel.dispatch(InstallerViewAction.InstallPrepare) }
     }

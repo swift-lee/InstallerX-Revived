@@ -109,7 +109,7 @@ class BroadcastHandler(scope: CoroutineScope, session: InstallerSessionRepositor
         private suspend fun doWork(context: Context, name: Name) {
             when (name) {
                 Name.Analyse -> session.analyse()
-                Name.Install -> session.install(true)
+                Name.Install -> session.install(triggerAuth = true, checkVirusTotal = false)
                 Name.Finish -> session.close()
                 Name.Cancel -> session.cancel()
                 Name.PrivilegedLaunchAndFinish -> handlePrivilegedLaunchAndFinish(context)

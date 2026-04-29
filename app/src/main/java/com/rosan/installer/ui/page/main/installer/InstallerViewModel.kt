@@ -25,6 +25,7 @@ import com.rosan.installer.domain.settings.model.Authorizer
 import com.rosan.installer.domain.settings.model.ConfigModel
 import com.rosan.installer.domain.settings.model.InstallMode
 import com.rosan.installer.domain.settings.model.InstallerMode
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.util.addFlag
@@ -95,7 +96,9 @@ class InstallerViewModel(
                 autoSilentInstall = prefs.autoSilentInstall,
                 labTapIconToShare = prefs.labTapIconToShare,
                 labShowFilePath = local.tempLabShowFilePath ?: prefs.labShowFilePath,
-                labShowInstallInitiator = local.tempLabShowInstallInitiator ?: prefs.labShowInstallInitiator
+                labShowInstallInitiator = local.tempLabShowInstallInitiator ?: prefs.labShowInstallInitiator,
+                virusTotalMode = prefs.virusTotalMode,
+                virusTotalApiKey = prefs.virusTotalApiKey
             ),
             rootMode = prefs.labRootMode,
             managedInstallerPackages = prefs.managedInstallerPackages,
@@ -165,8 +168,8 @@ class InstallerViewModel(
             is InstallerViewAction.InstallPrepare -> installPrepare()
             is InstallerViewAction.InstallExtendedMenu -> installExtendedMenu()
             is InstallerViewAction.InstallExtendedSubMenu -> installExtendedSubMenu()
-            is InstallerViewAction.InstallMultiple -> installMultiple()
-            is InstallerViewAction.Install -> install()
+            is InstallerViewAction.InstallMultiple -> installMultiple(action.checkVirusTotal)
+            is InstallerViewAction.Install -> install(action.checkVirusTotal)
             is InstallerViewAction.Background -> background()
             is InstallerViewAction.Reboot -> session.reboot(action.reason)
             is InstallerViewAction.UninstallAndRetryInstall -> uninstallAndRetryInstall(action.keepData, action.conflictingPackage)
@@ -180,6 +183,7 @@ class InstallerViewModel(
             is InstallerViewAction.SetTempShowOPPOSpecial -> _localState.update { it.copy(tempShowOPPOSpecial = action.show) }
             is InstallerViewAction.SetTempLabShowFilePath -> _localState.update { it.copy(tempLabShowFilePath = action.show) }
             is InstallerViewAction.SetTempLabShowInstallInitiator -> _localState.update { it.copy(tempLabShowInstallInitiator = action.show) }
+            is InstallerViewAction.SetTempVirusTotalEnabled -> _localState.update { it.copy(tempVirusTotalEnabled = action.enabled) }
             is InstallerViewAction.ToggleSelection -> toggleSelection(action.packageName, action.entity, action.isMultiSelect)
             is InstallerViewAction.ToggleUninstallFlag -> toggleUninstallFlag(action.flag, action.enable)
             is InstallerViewAction.SetInstallerMode -> selectInstallerMode(action.mode)
@@ -330,7 +334,7 @@ class InstallerViewModel(
 
                         is ProgressEntity.UninstallSuccess -> {
                             isRetryingInstall = false
-                            session.install(false)
+                            session.install(triggerAuth = false, checkVirusTotal = false)
                         }
 
                         else -> {}
@@ -440,7 +444,7 @@ class InstallerViewModel(
                 if (newStage is InstallerStage.InstallPrepare && session.config.installMode == InstallMode.AutoDialog) {
                     autoInstallJob = viewModelScope.launch {
                         delay(500)
-                        if (_localState.value.stage is InstallerStage.InstallPrepare) install()
+                        if (_localState.value.stage is InstallerStage.InstallPrepare) install(effectiveVirusTotalEnabled())
                     }
                 }
             }
@@ -601,10 +605,10 @@ class InstallerViewModel(
         } else toast(R.string.error_dialog_install_menu_not_available)
     }
 
-    private fun install() {
+    private fun install(checkVirusTotal: Boolean) {
         autoInstallJob?.cancel()
-        Timber.d("Standard foreground installation triggered. Contains Module: $isInstallingModule")
-        session.install(true)
+        Timber.d("Standard foreground installation triggered. Contains Module: $isInstallingModule, checkVirusTotal=$checkVirusTotal")
+        session.install(triggerAuth = true, checkVirusTotal = checkVirusTotal)
     }
 
     private fun background() = session.background(true)
@@ -667,10 +671,21 @@ class InstallerViewModel(
         session.uninstall(targetPackageName)
     }
 
-    private fun installMultiple() {
+    private fun installMultiple(checkVirusTotal: Boolean) {
         // Read from _localState instead of session
         val selectedEntities = _localState.value.analysisResults.flatMap { it.appEntities }.filter { it.selected }
-        session.installMultiple(selectedEntities)
+        session.installMultiple(selectedEntities, checkVirusTotal)
+    }
+
+    fun defaultVirusTotalEnabled(state: InstallerState = uiState.value): Boolean = when (state.viewSettings.virusTotalMode) {
+        VirusTotalMode.Enable -> true
+        VirusTotalMode.Disable,
+        VirusTotalMode.FollowConfig -> false
+    }
+
+    fun effectiveVirusTotalEnabled(state: InstallerState = uiState.value): Boolean {
+        if (state.viewSettings.virusTotalApiKey.isBlank()) return false
+        return state.tempVirusTotalEnabled ?: defaultVirusTotalEnabled(state)
     }
 
     private fun shareApp(entity: AppEntity) {

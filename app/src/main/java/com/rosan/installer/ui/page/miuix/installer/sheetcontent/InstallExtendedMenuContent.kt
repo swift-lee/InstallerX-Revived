@@ -25,10 +25,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
+import com.rosan.installer.core.env.AppConfig
+import com.rosan.installer.domain.engine.model.AppEntity
+import com.rosan.installer.domain.engine.model.sortedBest
 import com.rosan.installer.domain.settings.model.Authorizer
 import com.rosan.installer.domain.settings.model.InstallerMode
 import com.rosan.installer.domain.settings.model.NamedPackage
 import com.rosan.installer.ui.icons.AppIcons
+import com.rosan.installer.ui.page.main.installer.InstallerState
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction.SetInstaller
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction.SetTargetUser
@@ -37,6 +41,7 @@ import com.rosan.installer.ui.page.main.installer.components.rememberInstallOpti
 import com.rosan.installer.ui.page.main.installer.dialog.ExtendedMenuEntity
 import com.rosan.installer.ui.page.main.installer.dialog.ExtendedMenuItemEntity
 import com.rosan.installer.ui.page.main.installer.dialog.inner.InstallExtendedMenuAction
+import com.rosan.installer.ui.page.miuix.widgets.MiuixCheckboxWidget
 import com.rosan.installer.ui.page.miuix.widgets.MiuixSwitchWidget
 import com.rosan.installer.ui.theme.InstallerTheme
 import com.rosan.installer.ui.theme.miuixSheetCardColorDark
@@ -71,6 +76,13 @@ fun InstallExtendedMenuContent(
     val availableUsers = uiState.availableUsers
 
     val installOptions = rememberInstallOptions(authorizer)
+    val currentPackageName = uiState.currentPackageName
+    val selectedPrimaryEntity = uiState.analysisResults.find { it.packageName == currentPackageName }
+        ?.appEntities
+        ?.filter { it.selected }
+        ?.map { it.app }
+        ?.sortedBest()
+        ?.firstOrNull()
 
     val installerMode = uiState.config.installerMode
     val selectedInstaller = remember(selectedInstallerPackageName, managedPackages) {
@@ -78,7 +90,17 @@ fun InstallExtendedMenuContent(
     }
 
     val menuEntities =
-        remember(installOptions, selectedInstaller, installerMode, customizeUserEnabled, selectedUserId, availableUsers, authorizer) {
+        remember(
+            installOptions,
+            selectedInstaller,
+            installerMode,
+            customizeUserEnabled,
+            selectedUserId,
+            availableUsers,
+            authorizer,
+            selectedPrimaryEntity,
+            uiState.viewSettings.virusTotalApiKey,
+        ) {
             buildList {
                 // Installer Mode selection (Always shown for Root/Shizuku)
                 if (authorizer == Authorizer.Root || authorizer == Authorizer.Shizuku) {
@@ -102,6 +124,24 @@ fun InstallExtendedMenuContent(
                             menuItem = ExtendedMenuItemEntity(
                                 nameResourceId = R.string.config_target_user,
                                 icon = AppIcons.InstallUser,
+                                action = null
+                            )
+                        )
+                    )
+                }
+
+                if (
+                    AppConfig.isInternetAccessEnabled &&
+                    selectedPrimaryEntity is AppEntity.BaseEntity &&
+                    uiState.viewSettings.virusTotalApiKey.isNotBlank()
+                ) {
+                    add(
+                        ExtendedMenuEntity(
+                            action = InstallExtendedMenuAction.VirusTotalCheck,
+                            menuItem = ExtendedMenuItemEntity(
+                                nameResourceId = R.string.virus_total_install_check,
+                                descriptionResourceId = R.string.virus_total_install_check_desc,
+                                icon = null,
                                 action = null
                             )
                         )
@@ -146,7 +186,8 @@ fun InstallExtendedMenuContent(
                 installerMode = installerMode,
                 defaultInstallerFromSettings = defaultInstallerFromSettings,
                 availableUsers = availableUsers,
-                selectedUserId = selectedUserId
+                selectedUserId = selectedUserId,
+                uiState = uiState
             )
         }
 
@@ -179,7 +220,8 @@ private fun ExtendedMenuLazyList(
     installerMode: InstallerMode,
     defaultInstallerFromSettings: String?,
     availableUsers: Map<Int, String>,
-    selectedUserId: Int
+    selectedUserId: Int,
+    uiState: InstallerState,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -202,6 +244,19 @@ private fun ExtendedMenuLazyList(
                 val isSelected = option?.let { (installFlags and it.value) != 0 } ?: false
 
                 when (item.action) {
+                    is InstallExtendedMenuAction.VirusTotalCheck -> {
+                        val enabled = uiState.viewSettings.virusTotalApiKey.isNotBlank()
+                        MiuixCheckboxWidget(
+                            title = stringResource(item.menuItem.nameResourceId),
+                            description = item.menuItem.descriptionResourceId?.let { stringResource(it) },
+                            enabled = enabled,
+                            checked = viewModel.effectiveVirusTotalEnabled(uiState),
+                            onCheckedChange = { checked ->
+                                viewModel.dispatch(InstallerViewAction.SetTempVirusTotalEnabled(checked))
+                            }
+                        )
+                    }
+
                     is InstallExtendedMenuAction.InstallOption -> {
                         MiuixSwitchWidget(
                             title = stringResource(item.menuItem.nameResourceId),

@@ -66,6 +66,6 @@ class ProgressHandler(scope: CoroutineScope, session: InstallerSessionRepository
         }
 
         Timber.d("[id=${session.id}] onAnalysedSuccess: Auto-install conditions met. Triggering install().")
-        session.install(true)
+        session.install(triggerAuth = true, checkVirusTotal = false)
     }
 }

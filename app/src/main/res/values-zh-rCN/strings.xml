@@ -156,6 +156,9 @@
     <string name="virus_total_debug_checking">正在查询 VirusTotal…</string>
     <string name="virus_total_debug_sha256">SHA-256</string>
     <string name="virus_total_debug_result">VirusTotal 查询结果</string>
+    <string name="virus_total_install_check">使用 VirusTotal 检查</string>
+    <string name="virus_total_install_check_desc">安装前查询此 APK 哈希</string>
+    <string name="virus_total_install_check_no_api_key">配置 VirusTotal API key 后才能启用此检查</string>
     <string name="uninstaller_settings_require_biometric_auth">卸载时需要通过设备生物认证</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">在卸载时请求系统进行生物识别进行认证</string>
     <string name="use_biometric_confirm_change_auth_settings">确实要修改此设置吗</string>

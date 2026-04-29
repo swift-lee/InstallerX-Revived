@@ -81,7 +81,7 @@ fun InstallChoiceContent(
         .count { it.app is AppEntity.ModuleEntity }
     val primaryButtonTextRes = if (isMultiApk) R.string.install else R.string.next
     val primaryButtonAction = if (isMultiApk) {
-        { viewModel.dispatch(InstallerViewAction.InstallMultiple) }
+        { viewModel.dispatch(InstallerViewAction.InstallMultiple(false)) }
     } else {
         { viewModel.dispatch(InstallerViewAction.InstallPrepare) }
     }
@@ -209,7 +209,7 @@ fun InstallChoiceContent(
             if (showPrimaryButton) {
                 val (currentPrimaryTextRes, currentPrimaryAction) =
                     if (isMixedModuleZip && selectionMode == MmzSelectionMode.APK_CHOICE) {
-                        R.string.install to { viewModel.dispatch(InstallerViewAction.InstallMultiple) }
+                        R.string.install to { viewModel.dispatch(InstallerViewAction.InstallMultiple(false)) }
                     } else {
                         primaryButtonTextRes to primaryButtonAction
                     }

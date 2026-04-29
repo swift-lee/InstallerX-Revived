@@ -48,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
+import com.rosan.installer.core.env.AppConfig
 import com.rosan.installer.domain.engine.model.AppEntity
 import com.rosan.installer.domain.engine.model.DataType
 import com.rosan.installer.domain.engine.model.sortedBest
@@ -55,6 +56,7 @@ import com.rosan.installer.domain.settings.model.Authorizer
 import com.rosan.installer.domain.settings.model.InstallerMode
 import com.rosan.installer.domain.settings.model.NamedPackage
 import com.rosan.installer.ui.icons.AppIcons
+import com.rosan.installer.ui.page.main.installer.InstallerState
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction
 import com.rosan.installer.ui.page.main.installer.InstallerViewModel
 import com.rosan.installer.ui.page.main.installer.components.permissionIcon
@@ -84,8 +86,13 @@ fun installExtendedMenuDialog(
     val customizeUserEnabled = uiState.config.enableCustomizeUser
     val authorizer = uiState.config.authorizer
 
-    val containerType =
-        uiState.analysisResults.find { it.packageName == currentPackageName }?.appEntities?.first()?.app?.sourceType
+    val currentPackage = uiState.analysisResults.find { it.packageName == currentPackageName }
+    val selectedPrimaryEntity = currentPackage?.appEntities
+        ?.filter { it.selected }
+        ?.map { it.app }
+        ?.sortedBest()
+        ?.firstOrNull()
+    val containerType = currentPackage?.appEntities?.first()?.app?.sourceType
     val installOptions = rememberInstallOptions(uiState.config.authorizer)
 
     val selectedInstaller = remember(selectedInstallerPackageName, managedPackages) {
@@ -108,7 +115,9 @@ fun installExtendedMenuDialog(
         customizeUserEnabled,
         selectedUserId,
         uiState.availableUsers,
-        authorizer
+        authorizer,
+        selectedPrimaryEntity,
+        uiState.viewSettings.virusTotalApiKey,
     ) {
         buildList {
             // Permission List
@@ -155,6 +164,24 @@ fun installExtendedMenuDialog(
                 )
             }
 
+            if (
+                AppConfig.isInternetAccessEnabled &&
+                selectedPrimaryEntity is AppEntity.BaseEntity &&
+                uiState.viewSettings.virusTotalApiKey.isNotBlank()
+            ) {
+                add(
+                    ExtendedMenuEntity(
+                        action = InstallExtendedMenuAction.VirusTotalCheck,
+                        menuItem = ExtendedMenuItemEntity(
+                            nameResourceId = R.string.virus_total_install_check,
+                            descriptionResourceId = R.string.virus_total_install_check_desc,
+                            icon = null,
+                            action = null
+                        )
+                    )
+                )
+            }
+
             // Dynamic installation options
             if (authorizer == Authorizer.Root || authorizer == Authorizer.Shizuku) {
                 installOptions.forEach { option ->
@@ -193,7 +220,8 @@ fun installExtendedMenuDialog(
                 selectedInstallerPackageName = selectedInstallerPackageName,
                 managedPackages = managedPackages,
                 availableUsers = uiState.availableUsers,
-                defaultInstallerFromSettings = uiState.defaultInstallerFromSettings
+                defaultInstallerFromSettings = uiState.defaultInstallerFromSettings,
+                uiState = uiState
             )
         },
         buttons = dialogButtons(
@@ -217,7 +245,8 @@ fun MenuItemWidget(
     selectedInstallerPackageName: String?,
     managedPackages: List<NamedPackage>,
     availableUsers: Map<Int, String>,
-    defaultInstallerFromSettings: String?
+    defaultInstallerFromSettings: String?,
+    uiState: InstallerState,
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -441,11 +470,16 @@ fun MenuItemWidget(
                         else -> null
                     }
 
+                    val virusTotalEnabled = uiState.viewSettings.virusTotalApiKey.isNotBlank()
+
                     // Check if selected, valid only for install options
-                    val isSelected = option?.let { (installFlags and it.value) != 0 } ?: false
+                    val isSelected = when (item.action) {
+                        is InstallExtendedMenuAction.VirusTotalCheck -> viewmodel.effectiveVirusTotalEnabled(uiState)
+                        else -> option?.let { (installFlags and it.value) != 0 } ?: false
+                    }
 
                     // Determine background container color
-                    val containerColor = if (option != null && isSelected)
+                    val containerColor = if ((option != null || item.action is InstallExtendedMenuAction.VirusTotalCheck) && isSelected)
                         MaterialTheme.colorScheme.primaryContainer
                     else
                         MaterialTheme.colorScheme.surfaceContainer
@@ -474,6 +508,13 @@ fun MenuItemWidget(
                                     haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                                     option?.let { opt ->
                                         viewmodel.toggleInstallFlag(opt.value, !isSelected)
+                                    }
+                                }
+
+                                is InstallExtendedMenuAction.VirusTotalCheck -> {
+                                    if (virusTotalEnabled) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                                        viewmodel.dispatch(InstallerViewAction.SetTempVirusTotalEnabled(!isSelected))
                                     }
                                 }
 
@@ -508,9 +549,11 @@ fun MenuItemWidget(
                                             contentDescription = stringResource(item.menuItem.nameResourceId),
                                         )
 
-                                    is InstallExtendedMenuAction.InstallOption ->
+                                    is InstallExtendedMenuAction.InstallOption,
+                                    is InstallExtendedMenuAction.VirusTotalCheck ->
                                         Checkbox(
                                             checked = isSelected,
+                                            enabled = item.action !is InstallExtendedMenuAction.VirusTotalCheck || virusTotalEnabled,
                                             onCheckedChange = null, // Interaction is handled in the Card's onClick
                                         )
 
