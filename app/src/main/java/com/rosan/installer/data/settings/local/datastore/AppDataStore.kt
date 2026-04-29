@@ -131,6 +131,11 @@ class AppDataStore(
         // Updater
         val GITHUB_UPDATE_CHANNEL = stringPreferencesKey("github_update_channel")
         val CUSTOM_GITHUB_PROXY_URL = stringPreferencesKey("custom_github_proxy_url")
+
+        // VirusTotal
+        val VIRUS_TOTAL_MODE = stringPreferencesKey("virus_total_mode")
+        val VIRUS_TOTAL_API_KEY = stringPreferencesKey("virus_total_api_key")
+        val VIRUS_TOTAL_ENDPOINT = stringPreferencesKey("virus_total_endpoint")
     }
 
     suspend fun putString(key: Preferences.Key<String>, value: String) {

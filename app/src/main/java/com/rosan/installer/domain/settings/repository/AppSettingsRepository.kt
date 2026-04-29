@@ -20,7 +20,10 @@ enum class StringSetting {
     PredictiveBackExitDirection,
     GithubUpdateChannel,
     CustomGithubProxyUrl,
-    InstallerBiometricAuthMode
+    InstallerBiometricAuthMode,
+    VirusTotalMode,
+    VirusTotalApiKey,
+    VirusTotalEndpoint
 }
 
 enum class IntSetting {

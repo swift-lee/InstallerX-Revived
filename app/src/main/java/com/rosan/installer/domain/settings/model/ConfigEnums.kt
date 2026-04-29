@@ -134,3 +134,16 @@ enum class BiometricAuthMode(val value: String) {
         fun fromValueOrDefault(value: String) = entries.find { it.value == value } ?: FollowConfig
     }
 }
+
+/**
+ * Define VirusTotal check modes used by InstallerX online builds.
+ */
+enum class VirusTotalMode(val value: String) {
+    Disable("disable"),
+    Enable("enable"),
+    FollowConfig("follow_config");
+
+    companion object {
+        fun fromValueOrDefault(value: String) = entries.find { it.value == value } ?: Disable
+    }
+}

@@ -17,6 +17,7 @@ import com.rosan.installer.domain.settings.model.PredictiveBackAnimation
 import com.rosan.installer.domain.settings.model.PredictiveBackExitDirection
 import com.rosan.installer.domain.settings.model.RootMode
 import com.rosan.installer.domain.settings.model.SharedUid
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.domain.settings.repository.IntSetting
@@ -83,6 +84,12 @@ class AppSettingsRepositoryImpl(
             // Lab settings
             appDataStore.getString(AppDataStore.GITHUB_UPDATE_CHANNEL, GithubUpdateChannel.OFFICIAL.name),
             appDataStore.getString(AppDataStore.CUSTOM_GITHUB_PROXY_URL, ""),
+
+            // VirusTotal settings
+            appDataStore.getString(AppDataStore.VIRUS_TOTAL_MODE, VirusTotalMode.Disable.value),
+            appDataStore.getString(AppDataStore.VIRUS_TOTAL_API_KEY, ""),
+            appDataStore.getString(AppDataStore.VIRUS_TOTAL_ENDPOINT, ""),
+
             appDataStore.getBoolean(AppDataStore.LAB_ENABLE_MODULE_FLASH, false),
             appDataStore.getBoolean(AppDataStore.LAB_MODULE_FLASH_SHOW_ART, true),
             appDataStore.getString(AppDataStore.LAB_ROOT_IMPLEMENTATION, "Default"),
@@ -149,6 +156,10 @@ class AppSettingsRepositoryImpl(
             // Updater
             githubUpdateChannel = GithubUpdateChannel.fromValueOrDefault(values[idx++] as String),
             customGithubProxyUrl = values[idx++] as String,
+            // VirusTotal
+            virusTotalMode = VirusTotalMode.fromValueOrDefault(values[idx++] as String),
+            virusTotalApiKey = values[idx++] as String,
+            virusTotalEndpoint = values[idx++] as String,
             // Lab
             labRootEnableModuleFlash = values[idx++] as Boolean,
             labRootShowModuleArt = values[idx++] as Boolean,
@@ -240,6 +251,9 @@ class AppSettingsRepositoryImpl(
             StringSetting.GithubUpdateChannel -> AppDataStore.GITHUB_UPDATE_CHANNEL
             StringSetting.CustomGithubProxyUrl -> AppDataStore.CUSTOM_GITHUB_PROXY_URL
             StringSetting.InstallerBiometricAuthMode -> AppDataStore.INSTALLER_REQUIRE_BIOMETRIC_AUTH
+            StringSetting.VirusTotalMode -> AppDataStore.VIRUS_TOTAL_MODE
+            StringSetting.VirusTotalApiKey -> AppDataStore.VIRUS_TOTAL_API_KEY
+            StringSetting.VirusTotalEndpoint -> AppDataStore.VIRUS_TOTAL_ENDPOINT
         }
 
     private fun intKey(setting: IntSetting): Preferences.Key<Int> =

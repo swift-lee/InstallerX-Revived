@@ -41,6 +41,11 @@ data class AppPreferences(
     // Lab Settings
     val githubUpdateChannel: GithubUpdateChannel,
     val customGithubProxyUrl: String,
+    // VirusTotal Settings
+    val virusTotalMode: VirusTotalMode,
+    val virusTotalApiKey: String,
+    val virusTotalEndpoint: String,
+    // Lab Settings
     val labRootEnableModuleFlash: Boolean,
     val labRootShowModuleArt: Boolean,
     val labRootMode: RootMode,
