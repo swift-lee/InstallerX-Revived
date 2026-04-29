@@ -126,6 +126,7 @@ private fun VirusTotalSettingsPage(
     var showApiKeyDialog by remember { mutableStateOf(false) }
     var showEndpointDialog by remember { mutableStateOf(false) }
     var showCustomEndpointDialog by remember { mutableStateOf(false) }
+    var showDebugCheckDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         topAppBarState.heightOffset = topAppBarState.heightOffsetLimit
@@ -165,6 +166,23 @@ private fun VirusTotalSettingsPage(
                 showCustomEndpointDialog = false
                 viewModel.dispatch(VirusTotalSettingsAction.ChangeEndpoint(it))
             }
+        )
+    }
+
+    if (showDebugCheckDialog) {
+        VirusTotalDebugCheckDialog(
+            checking = uiState.debugChecking,
+            onDismiss = { showDebugCheckDialog = false },
+            onConfirm = { sha256: String ->
+                viewModel.dispatch(VirusTotalSettingsAction.DebugCheckSha256(sha256))
+            }
+        )
+    }
+
+    uiState.debugResult?.let { result ->
+        VirusTotalDebugResultDialog(
+            result = result,
+            onDismiss = { viewModel.dispatch(VirusTotalSettingsAction.DebugClearResult) }
         )
     }
 
@@ -232,6 +250,12 @@ private fun VirusTotalSettingsPage(
                         VirusTotalEndpointWidget(
                             endpoint = uiState.endpoint,
                             onClick = { showEndpointDialog = true }
+                        )
+                    }
+                    item {
+                        VirusTotalDebugCheckWidget(
+                            checking = uiState.debugChecking,
+                            onClick = { showDebugCheckDialog = true }
                         )
                     }
                 }
@@ -323,6 +347,7 @@ private fun MiuixVirusTotalSettingsPage(
     var showApiKeyDialog by remember { mutableStateOf(false) }
     var showEndpointDialog by remember { mutableStateOf(false) }
     var showCustomEndpointDialog by remember { mutableStateOf(false) }
+    var showDebugCheckDialog by remember { mutableStateOf(false) }
 
     if (showApiKeyDialog) {
         VirusTotalApiKeyDialog(
@@ -358,6 +383,23 @@ private fun MiuixVirusTotalSettingsPage(
                 showCustomEndpointDialog = false
                 viewModel.dispatch(VirusTotalSettingsAction.ChangeEndpoint(it))
             }
+        )
+    }
+
+    if (showDebugCheckDialog) {
+        VirusTotalDebugCheckDialog(
+            checking = uiState.debugChecking,
+            onDismiss = { showDebugCheckDialog = false },
+            onConfirm = {
+                viewModel.dispatch(VirusTotalSettingsAction.DebugCheckSha256(it))
+            }
+        )
+    }
+
+    uiState.debugResult?.let { result ->
+        VirusTotalDebugResultDialog(
+            result = result,
+            onDismiss = { viewModel.dispatch(VirusTotalSettingsAction.DebugClearResult) }
         )
     }
 
@@ -447,6 +489,15 @@ private fun MiuixVirusTotalSettingsPage(
                         title = stringResource(R.string.virus_total_endpoint),
                         summary = uiState.endpoint.ifBlank { stringResource(R.string.virus_total_endpoint_official) },
                         onClick = { showEndpointDialog = true }
+                    )
+                    BasicComponent(
+                        title = stringResource(R.string.virus_total_debug_check),
+                        summary = stringResource(
+                            if (uiState.debugChecking) R.string.virus_total_debug_checking
+                            else R.string.virus_total_debug_check_desc
+                        ),
+                        enabled = !uiState.debugChecking,
+                        onClick = { showDebugCheckDialog = true }
                     )
                 }
             }

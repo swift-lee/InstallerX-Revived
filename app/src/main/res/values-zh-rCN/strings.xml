@@ -151,6 +151,11 @@
     <string name="virus_total_endpoint_desc">留空则使用官方端点</string>
     <string name="virus_total_endpoint_official">官方</string>
     <string name="virus_total_endpoint_custom">自定义</string>
+    <string name="virus_total_debug_check">SHA-256 查询</string>
+    <string name="virus_total_debug_check_desc">输入 SHA-256 并直接查询 VirusTotal</string>
+    <string name="virus_total_debug_checking">正在查询 VirusTotal…</string>
+    <string name="virus_total_debug_sha256">SHA-256</string>
+    <string name="virus_total_debug_result">VirusTotal 查询结果</string>
     <string name="uninstaller_settings_require_biometric_auth">卸载时需要通过设备生物认证</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">在卸载时请求系统进行生物识别进行认证</string>
     <string name="use_biometric_confirm_change_auth_settings">确实要修改此设置吗</string>

@@ -30,6 +30,7 @@ import com.rosan.installer.domain.engine.usecase.GetSessionConfirmationDetailsUs
 import com.rosan.installer.domain.engine.usecase.ProcessInstallationUseCase
 import com.rosan.installer.domain.engine.usecase.ProcessUninstallUseCase
 import com.rosan.installer.domain.engine.usecase.SelectOptimalSplitsUseCase
+import com.rosan.installer.domain.virustotal.usecase.CheckVirusTotalUseCase
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -68,4 +69,5 @@ val engineModule = module {
     factoryOf(::GetAppIconColorUseCase)
     factoryOf(::ClearAppIconCacheUseCase)
     factoryOf(::GetAppLabelUseCase)
+    factoryOf(::CheckVirusTotalUseCase)
 }

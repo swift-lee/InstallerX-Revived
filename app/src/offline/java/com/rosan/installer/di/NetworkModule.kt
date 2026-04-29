@@ -5,14 +5,17 @@ package com.rosan.installer.di
 import com.rosan.installer.data.session.resolver.OfflineNetworkResolver
 import com.rosan.installer.data.updater.provider.OfflineInAppInstallProviderImpl
 import com.rosan.installer.data.updater.repository.OfflineUpdateRepositoryImpl
+import com.rosan.installer.data.virustotal.repository.OfflineVirusTotalCheckerRepositoryImpl
 import com.rosan.installer.domain.session.repository.NetworkResolver
 import com.rosan.installer.domain.updater.provider.InAppInstallProvider
 import com.rosan.installer.domain.updater.repository.UpdateRepository
 import com.rosan.installer.domain.updater.usecase.PerformAppUpdateUseCase
+import com.rosan.installer.domain.virustotal.repository.VirusTotalCheckerRepository
 import org.koin.dsl.module
 
 val networkModule = module {
     single<NetworkResolver> { OfflineNetworkResolver() }
+    single<VirusTotalCheckerRepository> { OfflineVirusTotalCheckerRepositoryImpl() }
 }
 
 val updateModule = module {

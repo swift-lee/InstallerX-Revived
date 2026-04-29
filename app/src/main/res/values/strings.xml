@@ -157,6 +157,11 @@
     <string name="virus_total_endpoint_desc">Leave empty to use the official endpoint</string>
     <string name="virus_total_endpoint_official">Official</string>
     <string name="virus_total_endpoint_custom">Custom</string>
+    <string name="virus_total_debug_check">SHA-256 lookup</string>
+    <string name="virus_total_debug_check_desc">Enter a SHA-256 and query VirusTotal directly</string>
+    <string name="virus_total_debug_checking">Querying VirusTotal…</string>
+    <string name="virus_total_debug_sha256">SHA-256</string>
+    <string name="virus_total_debug_result">VirusTotal result</string>
     <string name="uninstaller_settings_require_biometric_auth">Require Biometric Auth to Uninstall</string>
     <string name="uninstaller_settings_require_biometric_auth_desc">Require biometric auth when uninstalling</string>
     <string name="use_biometric_confirm_change_auth_settings">Are you sure you want to change this setting</string>

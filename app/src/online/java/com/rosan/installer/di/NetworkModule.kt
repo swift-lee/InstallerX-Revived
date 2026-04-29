@@ -5,10 +5,12 @@ package com.rosan.installer.di
 import com.rosan.installer.data.session.resolver.OkHttpNetworkResolver
 import com.rosan.installer.data.updater.provider.InAppInstallProviderImpl
 import com.rosan.installer.data.updater.repository.OnlineUpdateRepositoryImpl
+import com.rosan.installer.data.virustotal.repository.OnlineVirusTotalCheckerRepositoryImpl
 import com.rosan.installer.domain.session.repository.NetworkResolver
 import com.rosan.installer.domain.updater.provider.InAppInstallProvider
 import com.rosan.installer.domain.updater.repository.UpdateRepository
 import com.rosan.installer.domain.updater.usecase.PerformAppUpdateUseCase
+import com.rosan.installer.domain.virustotal.repository.VirusTotalCheckerRepository
 import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import org.koin.core.module.dsl.bind
@@ -35,6 +37,7 @@ val networkModule = module {
     }
 
     singleOf(::OkHttpNetworkResolver) { bind<NetworkResolver>() }
+    singleOf(::OnlineVirusTotalCheckerRepositoryImpl) { bind<VirusTotalCheckerRepository>() }
 }
 
 val updateModule = module {
