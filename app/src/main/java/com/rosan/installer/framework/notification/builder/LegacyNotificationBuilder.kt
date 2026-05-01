@@ -37,6 +37,7 @@ class LegacyNotificationBuilder(
             is ProgressEntity.InstallResolveSuccess -> onResolveSuccess(builder)
             is ProgressEntity.InstallPreparing -> onPreparing(builder, progress)
             is ProgressEntity.InstallAnalysing -> onAnalysing(builder)
+            is ProgressEntity.VirusTotalAnalysing,
             is ProgressEntity.VirusTotalChecking -> onVirusTotalChecking(builder)
             is ProgressEntity.VirusTotalBlocked -> onVirusTotalBlocked(builder).build()
             is ProgressEntity.InstallAnalysedFailed -> onAnalysedFailed(builder)
@@ -52,7 +53,7 @@ class LegacyNotificationBuilder(
 
     private fun createBaseBuilder(progress: ProgressEntity, background: Boolean, showDialog: Boolean): NotificationCompat.Builder {
         val isWorking =
-            progress is ProgressEntity.Ready || progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallResolveSuccess || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalChecking || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.Installing || progress is ProgressEntity.InstallingModule || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
+            progress is ProgressEntity.Ready || progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallResolveSuccess || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalAnalysing || progress is ProgressEntity.VirusTotalChecking || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.Installing || progress is ProgressEntity.InstallingModule || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
         val isImportance =
             progress is ProgressEntity.InstallResolvedFailed || progress is ProgressEntity.InstallAnalysedFailed || progress is ProgressEntity.InstallAnalysedSuccess || progress is ProgressEntity.VirusTotalBlocked || progress is ProgressEntity.InstallFailed || progress is ProgressEntity.InstallSuccess || progress is ProgressEntity.InstallCompleted
 
@@ -74,6 +75,7 @@ class LegacyNotificationBuilder(
         val legacyProgressValue = when (progress) {
             is ProgressEntity.InstallResolving -> 0
             is ProgressEntity.InstallAnalysing -> 40
+            is ProgressEntity.VirusTotalAnalysing,
             is ProgressEntity.VirusTotalChecking -> 45
             is ProgressEntity.Installing -> 50 + (40 * (if (progress.total > 0) progress.current.toFloat() / progress.total.toFloat() else 0.5f)).toInt()
             is ProgressEntity.InstallingModule -> 70
@@ -136,19 +138,34 @@ class LegacyNotificationBuilder(
         val selectedApps = allEntities.map { it.app }
         val hasComplexType = allEntities.any { it.app.sourceType == DataType.MIXED_MODULE_APK || it.app.sourceType == DataType.MIXED_MODULE_ZIP }
         val isMultiPackage = selectedApps.groupBy { it.packageName }.size > 1
+        val virusTotalResult = session.virusTotalAnalysisResult.value
+        val virusTotalText = virusTotalResult.virusTotalNotificationText(context)
 
-        if (hasComplexType) return builder.setContentTitle(context.getString(R.string.installer_prepare_install))
-            .setContentText(context.getString(R.string.installer_mixed_module_apk_description_notification))
+        if (virusTotalResult != null) {
+            builder.setContentText(virusTotalText)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(virusTotalText))
+                .setOnlyAlertOnce(false)
+        }
+        if (virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe && virusTotalResult != null) {
+            builder.setSmallIcon(NotificationHelper.Icon.Pausing.resId)
+                .setContentTitle(virusTotalResult.virusTotalNotificationTitle(context))
+        }
+
+        if (hasComplexType) return builder.setContentTitle(builderContentTitleOrDefault(virusTotalResult, context.getString(R.string.installer_prepare_install)))
+            .setContentText(if (virusTotalResult != null) virusTotalText else context.getString(R.string.installer_mixed_module_apk_description_notification))
             .setLargeIcon(helper.getLargeIconBitmap(preferSystemIcon)).addAction(0, context.getString(R.string.cancel), helper.finishIntent)
             .build()
-        return if (isMultiPackage) builder.setContentTitle(context.getString(R.string.installer_prepare_install))
-            .setContentText(context.getString(R.string.installer_multi_apk_description_notification))
+        return if (isMultiPackage) builder.setContentTitle(builderContentTitleOrDefault(virusTotalResult, context.getString(R.string.installer_prepare_install)))
+            .setContentText(if (virusTotalResult != null) virusTotalText else context.getString(R.string.installer_multi_apk_description_notification))
             .addAction(0, context.getString(R.string.cancel), helper.finishIntent).build()
-        else builder.setContentTitle(selectedApps.getInfo(context).title)
-            .setContentText(context.getString(R.string.installer_prepare_type_unknown_confirm))
+        else builder.setContentTitle(builderContentTitleOrDefault(virusTotalResult, selectedApps.getInfo(context).title))
+            .setContentText(if (virusTotalResult != null) virusTotalText else context.getString(R.string.installer_prepare_type_unknown_confirm))
             .setLargeIcon(helper.getLargeIconBitmap(preferSystemIcon)).addAction(0, context.getString(R.string.install), helper.installIntent)
             .addAction(0, context.getString(R.string.cancel), helper.finishIntent).build()
     }
+
+    private fun builderContentTitleOrDefault(result: com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult?, defaultTitle: CharSequence): CharSequence =
+        if (result != null && result !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) result.virusTotalNotificationTitle(context) else defaultTitle
 
     private suspend fun onInstalling(
         builder: NotificationCompat.Builder,

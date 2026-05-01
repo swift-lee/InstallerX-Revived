@@ -175,6 +175,8 @@
     <string name="virus_total_suspicious_label">Suspicious:</string>
     <string name="virus_total_passed_label">Passed:</string>
     <string name="virus_total_check_on_virustotal">Check on VirusTotal</string>
+    <string name="virus_total_prepare_safe">VirusTotal: Passed</string>
+    <string name="virus_total_prepare_safe_desc">VirusTotal did not report this APK as malicious or suspicious.</string>
     <string name="continue_action">Continue</string>
     <string name="virus_total_risky_body">VirusTotal reported this APK as risky. Malicious: %1$d, Suspicious: %2$d. Details: %3$s</string>
     <string name="virus_total_risky_reason">Malicious: %1$d, Suspicious: %2$d</string>

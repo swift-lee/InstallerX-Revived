@@ -49,6 +49,7 @@ class InstallerSessionRepositoryImpl(
     override val uninstallInfo: MutableStateFlow<UninstallInfo?> = MutableStateFlow(null)
     override val confirmationDetails: MutableStateFlow<ConfirmationDetails?> = MutableStateFlow(null)
     override val virusTotalResult: MutableStateFlow<VirusTotalCheckResult?> = MutableStateFlow(null)
+    override val virusTotalAnalysisResult: MutableStateFlow<VirusTotalCheckResult?> = MutableStateFlow(null)
     var pendingVirusTotalDecision: CompletableDeferred<VirusTotalDecision>? = null
 
     override fun resolveInstall(activity: Activity) {
@@ -127,6 +128,7 @@ class InstallerSessionRepositoryImpl(
             pendingVirusTotalDecision?.complete(VirusTotalDecision.Cancel)
             pendingVirusTotalDecision = null
             virusTotalResult.value = null
+            virusTotalAnalysisResult.value = null
             action.tryEmit(Action.Finish)
 
             // 2. Trigger the callback to remove from SessionManager

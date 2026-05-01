@@ -46,6 +46,7 @@ data class InstallerState(
     val availableUsers: Map<Int, String> = emptyMap(),
     val uiUninstallInfo: UninstallInfo? = null,
     val virusTotalResult: VirusTotalCheckResult? = null,
+    val virusTotalAnalysisResult: VirusTotalCheckResult? = null,
 
     // Error State
     val error: Throwable = Throwable()

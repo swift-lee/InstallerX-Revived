@@ -28,6 +28,7 @@ import com.rosan.installer.domain.settings.model.InstallerMode
 import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.virustotal.exception.VirusTotalCheckException
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.util.addFlag
 import com.rosan.installer.util.hasFlag
@@ -83,8 +84,9 @@ class InstallerViewModel(
     val uiState: StateFlow<InstallerState> = combine(
         _localState,
         appSettingsRepo.preferencesFlow,
-        session.virusTotalResult
-    ) { local, prefs, virusTotalResult ->
+        session.virusTotalResult,
+        session.virusTotalAnalysisResult
+    ) { local, prefs, virusTotalResult, virusTotalAnalysisResult ->
         local.copy(
             viewSettings = local.viewSettings.copy(
                 useBlur = prefs.useBlur,
@@ -105,6 +107,7 @@ class InstallerViewModel(
             rootMode = prefs.labRootMode,
             managedInstallerPackages = prefs.managedInstallerPackages,
             virusTotalResult = virusTotalResult,
+            virusTotalAnalysisResult = virusTotalAnalysisResult,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -243,6 +246,7 @@ class InstallerViewModel(
             else InstallerStage.InstallSuccess
         }
 
+        ProgressEntity.VirusTotalAnalysing,
         ProgressEntity.VirusTotalChecking -> InstallerStage.VirusTotalChecking
         ProgressEntity.VirusTotalBlocked -> InstallerStage.VirusTotalBlocked
         is ProgressEntity.InstallingModule -> InstallerStage.InstallingModule(progress.output)
@@ -269,6 +273,7 @@ class InstallerViewModel(
         ProgressEntity.UninstallReady -> InstallerStage.UninstallReady
         ProgressEntity.InstallResolving,
         ProgressEntity.InstallAnalysing,
+        ProgressEntity.VirusTotalAnalysing,
         ProgressEntity.VirusTotalChecking,
         ProgressEntity.VirusTotalBlocked,
         is ProgressEntity.InstallPreparing -> _localState.value.stage
@@ -303,13 +308,14 @@ class InstallerViewModel(
                 Pair(progress, uninstallInfo)
             }.collect { (progress, uninstallInfo) ->
 
-                if (progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallPreparing || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalChecking) {
+                if (progress is ProgressEntity.InstallResolving || progress is ProgressEntity.InstallPreparing || progress is ProgressEntity.InstallAnalysing || progress is ProgressEntity.VirusTotalAnalysing || progress is ProgressEntity.VirusTotalChecking) {
                     if (isInstallingModule) {
                         loadingStateJob?.cancel()
                         _localState.update {
                             it.copy(
                                 stage = when (progress) {
                                     is ProgressEntity.InstallPreparing -> InstallerStage.Preparing(progress.progress)
+                                    ProgressEntity.VirusTotalAnalysing,
                                     ProgressEntity.VirusTotalChecking -> InstallerStage.VirusTotalChecking
                                     else -> InstallerStage.Analysing
                                 }
@@ -319,7 +325,14 @@ class InstallerViewModel(
                         loadingStateJob = viewModelScope.launch {
                             delay(200L)
                             _localState.update {
-                                it.copy(stage = if (progress is ProgressEntity.InstallPreparing) InstallerStage.Preparing(progress.progress) else InstallerStage.Analysing)
+                                it.copy(
+                                    stage = when (progress) {
+                                        is ProgressEntity.InstallPreparing -> InstallerStage.Preparing(progress.progress)
+                                        ProgressEntity.VirusTotalAnalysing,
+                                        ProgressEntity.VirusTotalChecking -> InstallerStage.VirusTotalChecking
+                                        else -> InstallerStage.Analysing
+                                    }
+                                )
                             }
                         }
                     }
@@ -460,14 +473,22 @@ class InstallerViewModel(
 
                 autoInstallJob?.cancel()
                 if (newStage is InstallerStage.InstallPrepare && session.config.installMode == InstallMode.AutoDialog) {
-                    autoInstallJob = viewModelScope.launch {
-                        delay(500)
-                        if (_localState.value.stage is InstallerStage.InstallPrepare) install(effectiveVirusTotalEnabled())
+                    val requiresConfirmation = _localState.value.virusTotalAnalysisResult.requiresUserConfirmation()
+                    if (!requiresConfirmation) {
+                        autoInstallJob = viewModelScope.launch {
+                            delay(500)
+                            if (_localState.value.stage is InstallerStage.InstallPrepare) install(effectiveVirusTotalEnabled())
+                        }
                     }
                 }
             }
         }
     }
+
+    private fun VirusTotalCheckResult?.requiresUserConfirmation(): Boolean =
+        this is VirusTotalCheckResult.Risky ||
+                this is VirusTotalCheckResult.ApiError ||
+                this is VirusTotalCheckResult.NetworkError
 
     fun toggleInstallFlag(flag: Int, enable: Boolean) {
         updateConfig { currentConfig ->

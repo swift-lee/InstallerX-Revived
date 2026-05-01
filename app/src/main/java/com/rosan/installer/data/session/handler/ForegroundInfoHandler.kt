@@ -8,6 +8,7 @@ import com.rosan.installer.domain.session.repository.InstallerSessionRepository
 import com.rosan.installer.domain.settings.model.InstallMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.IntSetting
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -44,7 +45,11 @@ class ForegroundInfoHandler(
                     return@collect
                 }
 
-                if (progress is ProgressEntity.InstallAnalysedSuccess && session.config.installMode == InstallMode.AutoNotification) {
+                if (
+                    progress is ProgressEntity.InstallAnalysedSuccess &&
+                    session.config.installMode == InstallMode.AutoNotification &&
+                    !session.virusTotalAnalysisResult.value.requiresUserConfirmation()
+                ) {
                     return@collect
                 }
 
@@ -75,6 +80,11 @@ class ForegroundInfoHandler(
             }
         }
     }
+
+    private fun VirusTotalCheckResult?.requiresUserConfirmation(): Boolean =
+        this is VirusTotalCheckResult.Risky ||
+                this is VirusTotalCheckResult.ApiError ||
+                this is VirusTotalCheckResult.NetworkError
 
     override suspend fun onFinish() {
         autoCloseJob?.cancel()

@@ -7,6 +7,7 @@ import com.rosan.installer.domain.session.repository.InstallerSessionRepository
 import com.rosan.installer.domain.settings.model.InstallMode
 import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Job
@@ -71,9 +72,19 @@ class ProgressHandler(scope: CoroutineScope, session: InstallerSessionRepository
             return
         }
 
+        if (session.virusTotalAnalysisResult.value.requiresUserConfirmation()) {
+            Timber.d("[id=${session.id}] onAnalysedSuccess: VirusTotal result requires confirmation. Waiting for user action.")
+            return
+        }
+
         Timber.d("[id=${session.id}] onAnalysedSuccess: Auto-install conditions met. Triggering install().")
         session.install(triggerAuth = true, checkVirusTotal = effectiveVirusTotalEnabled())
     }
+
+    private fun VirusTotalCheckResult?.requiresUserConfirmation(): Boolean =
+        this is VirusTotalCheckResult.Risky ||
+                this is VirusTotalCheckResult.ApiError ||
+                this is VirusTotalCheckResult.NetworkError
 
     private suspend fun effectiveVirusTotalEnabled(): Boolean {
         val prefs = appSettingsRepo.preferencesFlow.first()

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -35,9 +37,11 @@ import com.rosan.installer.domain.engine.model.AppEntity
 import com.rosan.installer.domain.engine.model.DataType
 import com.rosan.installer.domain.engine.model.sortedBest
 import com.rosan.installer.domain.engine.usecase.AnalyzeInstallStateUseCase
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction
 import com.rosan.installer.ui.page.main.installer.InstallerViewModel
+import com.rosan.installer.ui.page.main.installer.components.VirusTotalResultCard
 import com.rosan.installer.ui.page.main.installer.components.WarningTextBlock
 import com.rosan.installer.ui.page.main.installer.components.pausingIcon
 import com.rosan.installer.ui.page.main.installer.dialog.DialogButton
@@ -239,6 +243,12 @@ fun installPrepareDialog(
         ) {
             LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                 item {
+                    VirusTotalResultCard(
+                        result = uiState.virusTotalAnalysisResult,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+                item {
                     InstallInfoChipGroup(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         notices = notices
@@ -369,6 +379,12 @@ fun installPrepareDialog(
                         DialogButton(
                             text = stringResource(buttonTextId),
                             weight = 1f,
+                            colors = if (uiState.virusTotalAnalysisResult is VirusTotalCheckResult.Risky) {
+                                ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFE60000),
+                                    contentColor = Color.White
+                                )
+                            } else null,
                             onLongClick = {
                                 // Trigger install directly
                                 viewModel.dispatch(

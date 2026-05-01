@@ -93,13 +93,14 @@ class MiIslandNotificationBuilder(
                 actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.cancel), helper.finishIntent))
             }
 
+            is ProgressEntity.VirusTotalAnalysing,
             is ProgressEntity.VirusTotalChecking -> {
                 title = context.getString(R.string.virus_total_checking_install)
                 shortText = context.getString(R.string.virus_total_scanning)
                 contentText = context.getString(R.string.virus_total_scanning)
                 isOngoing = true
                 showAppIcon = false
-                actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.virus_total_cancel_install), helper.cancelVirusTotalIntent))
+                actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.cancel), helper.finishIntent))
             }
 
             is ProgressEntity.VirusTotalBlocked -> {
@@ -119,25 +120,30 @@ class MiIslandNotificationBuilder(
                     allEntities.any { it.app.sourceType == DataType.MIXED_MODULE_APK || it.app.sourceType == DataType.MIXED_MODULE_ZIP }
                 val isMultiPackage = selectedApps.groupBy { it.packageName }.size > 1
 
-                shortText = if (hasComplexType || isMultiPackage) {
+                val virusTotalResult = session.virusTotalAnalysisResult.value
+                val virusTotalText = virusTotalResult.virusTotalNotificationText(context)
+
+                shortText = if (virusTotalResult != null && virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) {
+                    virusTotalResult.virusTotalNotificationTitle(context)
+                } else if (hasComplexType || isMultiPackage) {
                     context.getString(R.string.installer_live_channel_short_text_pending)
                 } else {
                     context.getString(R.string.installer_live_channel_short_text_pending_install)
                 }
 
                 if (hasComplexType) {
-                    title = context.getString(R.string.installer_prepare_install)
-                    contentText = context.getString(R.string.installer_mixed_module_apk_description_notification)
+                    title = if (virusTotalResult != null && virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) virusTotalResult.virusTotalNotificationTitle(context) else context.getString(R.string.installer_prepare_install)
+                    contentText = if (virusTotalResult != null) virusTotalText else context.getString(R.string.installer_mixed_module_apk_description_notification)
                     showAppIcon = false
                     actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.cancel), helper.finishIntent))
                 } else if (isMultiPackage) {
-                    title = context.getString(R.string.installer_prepare_install)
-                    contentText = context.getString(R.string.installer_multi_apk_description_notification)
+                    title = if (virusTotalResult != null && virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) virusTotalResult.virusTotalNotificationTitle(context) else context.getString(R.string.installer_prepare_install)
+                    contentText = if (virusTotalResult != null) virusTotalText else context.getString(R.string.installer_multi_apk_description_notification)
                     showAppIcon = false
                     actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.cancel), helper.finishIntent))
                 } else {
-                    title = context.getString(R.string.installer_prepare_type_unknown_confirm)
-                    contentText = selectedApps.getInfo(context).title
+                    title = if (virusTotalResult != null && virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) virusTotalResult.virusTotalNotificationTitle(context) else context.getString(R.string.installer_prepare_type_unknown_confirm)
+                    contentText = virusTotalResult?.virusTotalNotificationText(context) ?: selectedApps.getInfo(context).title
                     actionsList.add(IslandAction("miui_action_cancel", context.getString(R.string.cancel), helper.finishIntent))
                     actionsList.add(IslandAction("miui_action_install", context.getString(R.string.install), helper.installIntent, true))
                 }

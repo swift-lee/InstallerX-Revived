@@ -47,7 +47,7 @@ class ModernNotificationBuilder(
         InstallStageInfo(ProgressEntity.InstallResolving::class, 1f),
         InstallStageInfo(ProgressEntity.InstallPreparing::class, 4f),
         InstallStageInfo(ProgressEntity.InstallAnalysing::class, 1f),
-        InstallStageInfo(ProgressEntity.VirusTotalChecking::class, 1f),
+        InstallStageInfo(ProgressEntity.VirusTotalAnalysing::class, 1f),
         InstallStageInfo(ProgressEntity.Installing::class, 4f)
     )
 
@@ -83,6 +83,7 @@ class ModernNotificationBuilder(
             is ProgressEntity.InstallResolvedFailed -> onResolvedFailed(builder).build()
             is ProgressEntity.InstallAnalysedSuccess -> onAnalysedSuccess(builder, preferSystemIcon, isSameState).build()
             is ProgressEntity.InstallAnalysedFailed -> onAnalysedFailed(builder).build()
+            is ProgressEntity.VirusTotalAnalysing,
             is ProgressEntity.VirusTotalChecking -> builder.setContentText(context.getString(R.string.virus_total_scanning)).build()
             is ProgressEntity.VirusTotalBlocked -> onVirusTotalBlocked(builder).build()
             is ProgressEntity.Installing -> onInstalling(builder, progress, preferSystemIcon).build()
@@ -131,11 +132,14 @@ class ModernNotificationBuilder(
             }
         } else null
 
-        val failedStageIndex = when (progress) {
-            is ProgressEntity.InstallResolvedFailed -> 0
-            is ProgressEntity.InstallAnalysedFailed -> 2
-            is ProgressEntity.VirusTotalBlocked -> 3
-            is ProgressEntity.InstallFailed -> 4
+        val virusTotalWarning = progress is ProgressEntity.InstallAnalysedSuccess &&
+                session.virusTotalAnalysisResult.value != null &&
+                session.virusTotalAnalysisResult.value !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe
+        val failedStageIndex = when {
+            progress is ProgressEntity.InstallResolvedFailed -> 0
+            progress is ProgressEntity.InstallAnalysedFailed -> 2
+            progress is ProgressEntity.VirusTotalBlocked || virusTotalWarning -> 3
+            progress is ProgressEntity.InstallFailed -> 4
             else -> null
         }
 
@@ -173,6 +177,7 @@ class ModernNotificationBuilder(
                 progressStyle.setProgress((previousStagesWeight + (installStages[2].weight / 2f)).toInt())
             }
 
+            is ProgressEntity.VirusTotalAnalysing,
             is ProgressEntity.VirusTotalChecking -> {
                 contentTitle = context.getString(R.string.virus_total_checking_install)
                 shortText = context.getString(R.string.virus_total_scanning)
@@ -191,11 +196,16 @@ class ModernNotificationBuilder(
                 val hasComplexType = session.analysisResults.flatMap { it.appEntities }
                     .any { it.app.sourceType == DataType.MIXED_MODULE_APK || it.app.sourceType == DataType.MIXED_MODULE_ZIP }
                 val isMultiPackage = selectedApps.groupBy { it.packageName }.size > 1
+                val virusTotalResult = session.virusTotalAnalysisResult.value
 
-                shortText = if (hasComplexType || isMultiPackage) context.getString(R.string.installer_live_channel_short_text_pending)
+                shortText = if (virusTotalResult != null && virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) {
+                    virusTotalResult.virusTotalNotificationTitle(context)
+                } else if (hasComplexType || isMultiPackage) context.getString(R.string.installer_live_channel_short_text_pending)
                 else context.getString(R.string.installer_live_channel_short_text_pending_install)
 
-                contentTitle = if (hasComplexType || isMultiPackage) context.getString(R.string.installer_prepare_install)
+                contentTitle = if (virusTotalResult != null && virusTotalResult !is com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult.Safe) {
+                    virusTotalResult.virusTotalNotificationTitle(context)
+                } else if (hasComplexType || isMultiPackage) context.getString(R.string.installer_prepare_install)
                 else selectedApps.getInfo(context).title
 
                 progressStyle.setProgress(installStages.subList(0, 4).sumOf { it.weight.toDouble() }.toInt())
@@ -276,14 +286,17 @@ class ModernNotificationBuilder(
         val hasComplexType = allEntities.any { it.app.sourceType == DataType.MIXED_MODULE_APK || it.app.sourceType == DataType.MIXED_MODULE_ZIP }
         val isMultiPackage = allEntities.map { it.app }.groupBy { it.packageName }.size > 1
 
+        val virusTotalResult = session.virusTotalAnalysisResult.value
+        val virusTotalText = virusTotalResult?.virusTotalNotificationText(context)
+
         if (hasComplexType) {
-            builder.setContentText(context.getString(R.string.installer_mixed_module_apk_description_notification))
+            builder.setContentText(virusTotalText ?: context.getString(R.string.installer_mixed_module_apk_description_notification))
                 .addAction(0, context.getString(R.string.cancel), helper.finishIntent)
         } else if (isMultiPackage) {
-            builder.setContentText(context.getString(R.string.installer_multi_apk_description_notification))
+            builder.setContentText(virusTotalText ?: context.getString(R.string.installer_multi_apk_description_notification))
                 .addAction(0, context.getString(R.string.cancel), helper.finishIntent)
         } else {
-            builder.setContentText(context.getString(R.string.installer_prepare_type_unknown_confirm))
+            builder.setContentText(virusTotalText ?: context.getString(R.string.installer_prepare_type_unknown_confirm))
                 .addAction(0, context.getString(R.string.install), helper.installIntent)
                 .addAction(0, context.getString(R.string.cancel), helper.finishIntent)
                 .setLargeIcon(helper.getLargeIconBitmap(preferSystemIcon))
@@ -356,6 +369,7 @@ class ModernNotificationBuilder(
                             ProgressEntity.InstallPreparing::class, ProgressEntity.Installing::class -> it.primary.toArgb()
                             ProgressEntity.InstallResolving::class,
                             ProgressEntity.InstallAnalysing::class,
+                            ProgressEntity.VirusTotalAnalysing::class,
                             ProgressEntity.VirusTotalChecking::class -> it.tertiary.toArgb()
                             else -> it.primary.toArgb()
                         }

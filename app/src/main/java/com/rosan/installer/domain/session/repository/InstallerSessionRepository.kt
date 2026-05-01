@@ -30,6 +30,7 @@ interface InstallerSessionRepository : Closeable {
     val uninstallInfo: StateFlow<UninstallInfo?>
     val confirmationDetails: StateFlow<ConfirmationDetails?>
     val virusTotalResult: StateFlow<VirusTotalCheckResult?>
+    val virusTotalAnalysisResult: StateFlow<VirusTotalCheckResult?>
 
     /**
      * Resolves information for a package to be installed.

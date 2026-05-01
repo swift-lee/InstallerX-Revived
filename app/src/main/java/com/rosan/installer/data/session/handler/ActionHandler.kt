@@ -37,16 +37,14 @@ import com.rosan.installer.domain.settings.model.Authorizer
 import com.rosan.installer.domain.settings.model.BiometricAuthMode
 import com.rosan.installer.domain.settings.model.ConfigModel.Companion.default
 import com.rosan.installer.domain.settings.model.InstallMode
+import com.rosan.installer.domain.settings.model.VirusTotalMode
 import com.rosan.installer.domain.settings.repository.AppSettingsRepository
 import com.rosan.installer.domain.settings.repository.BooleanSetting
 import com.rosan.installer.domain.settings.repository.StringSetting
-import com.rosan.installer.domain.virustotal.exception.VirusTotalCheckException
-import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
-import com.rosan.installer.domain.virustotal.model.VirusTotalDecision
+
 import com.rosan.installer.domain.virustotal.usecase.CheckVirusTotalUseCase
 import com.rosan.installer.ui.common.auth.safeBiometricAuthOrThrow
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -307,6 +305,7 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
         }
 
         session.analysisResults = results
+        runVirusTotalAnalysisIfNeeded()
 
         Timber.d("[id=$sessionId] analyse: Emitting ProgressEntity.InstallAnalysedSuccess.")
         session.progress.emit(ProgressEntity.InstallAnalysedSuccess)
@@ -358,8 +357,7 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
         if (triggerAuth) {
             requestUserBiometricAuthentication(true)
         }
-        Timber.d("[id=$sessionId] install: VirusTotal check requested=$checkVirusTotal")
-        if (!runVirusTotalGateIfNeeded(checkVirusTotal, selectedBaseEntity())) return
+        Timber.d("[id=$sessionId] install: VirusTotal warning-only result=${session.virusTotalAnalysisResult.value}, requested=$checkVirusTotal")
         session.moduleLog = emptyList()
         performInstallLogic()
     }
@@ -395,25 +393,6 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
 
                 if (targetResult != null) {
                     val entitiesToInstall = appEntities.map { it.copy(selected = true) }
-                    if (!runVirusTotalGateIfNeeded(checkVirusTotal, entitiesToInstall.firstNotNullOfOrNull { it.app as? AppEntity.BaseEntity })) {
-                        appEntities.forEach { entity ->
-                            session.multiInstallResults.add(
-                                InstallResult(
-                                    entity,
-                                    false,
-                                    VirusTotalCheckException(
-                                        session.virusTotalResult.value
-                                            ?: VirusTotalCheckResult.ApiError(
-                                                sha256 = "",
-                                                message = "VirusTotal check was cancelled"
-                                            )
-                                    )
-                                )
-                            )
-                        }
-                        session.currentMultiInstallIndex++
-                        continue
-                    }
                     val tempResults = listOf(targetResult.copy(appEntities = entitiesToInstall))
 
                     // Perform install
@@ -451,8 +430,7 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
     }
 
     private fun handleVirusTotalDecision(continueInstall: Boolean) {
-        val decision = if (continueInstall) VirusTotalDecision.Continue else VirusTotalDecision.Cancel
-        session.pendingVirusTotalDecision?.complete(decision)
+        Timber.d("[id=$sessionId] Ignoring legacy VirusTotal decision in warning-only mode: continueInstall=$continueInstall")
     }
 
     private fun selectedBaseEntity(): AppEntity.BaseEntity? = session.analysisResults
@@ -462,45 +440,31 @@ class ActionHandler(scope: CoroutineScope, session: InstallerSessionRepository) 
         .sortedBest()
         .firstNotNullOfOrNull { it as? AppEntity.BaseEntity }
 
-    private suspend fun runVirusTotalGateIfNeeded(
-        checkVirusTotal: Boolean,
-        baseEntity: AppEntity.BaseEntity?,
-    ): Boolean {
-        if (!checkVirusTotal || baseEntity == null) return true
+    private suspend fun effectiveVirusTotalEnabled(): Boolean {
+        val prefs = appSettingsRepo.preferencesFlow.first()
+        if (prefs.virusTotalApiKey.isBlank()) return false
+        return when (prefs.virusTotalMode) {
+            VirusTotalMode.Enable -> true
+            VirusTotalMode.Disable -> false
+            VirusTotalMode.FollowConfig -> session.config.checkVirusTotal
+        }
+    }
 
-        session.progress.emit(ProgressEntity.VirusTotalChecking)
+    private suspend fun runVirusTotalAnalysisIfNeeded() {
+        session.virusTotalAnalysisResult.value = null
+        val baseEntity = selectedBaseEntity()
+        if (!effectiveVirusTotalEnabled() || baseEntity == null) return
+
+        session.progress.emit(ProgressEntity.VirusTotalAnalysing)
         val prefs = appSettingsRepo.preferencesFlow.first()
         val result = checkVirusTotal(
             data = baseEntity.data,
             apiKey = prefs.virusTotalApiKey,
             endpoint = prefs.virusTotalEndpoint,
         )
-
-        if (result is VirusTotalCheckResult.Safe) {
-            session.virusTotalResult.value = null
-            return true
-        }
-
+        session.virusTotalAnalysisResult.value = result
         session.virusTotalResult.value = result
-        session.error = VirusTotalCheckException(result)
-        val decision = CompletableDeferred<VirusTotalDecision>()
-        session.pendingVirusTotalDecision = decision
-        session.progress.emit(ProgressEntity.VirusTotalBlocked)
-
-        return when (decision.await()) {
-            VirusTotalDecision.Continue -> {
-                session.pendingVirusTotalDecision = null
-                session.virusTotalResult.value = null
-                true
-            }
-            VirusTotalDecision.Cancel -> {
-                session.pendingVirusTotalDecision = null
-                session.virusTotalResult.value = null
-                session.error = VirusTotalCheckException(result, cancelled = true)
-                session.progress.emit(ProgressEntity.InstallFailed)
-                false
-            }
-        }
+        Timber.d("[id=$sessionId] VirusTotal post-analysis result=$result")
     }
 
     /**

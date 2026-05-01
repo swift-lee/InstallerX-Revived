@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rosan.installer.R
-import com.rosan.installer.core.env.AppConfig
 import com.rosan.installer.domain.engine.model.AppEntity
 import com.rosan.installer.domain.engine.model.sortedBest
 import com.rosan.installer.domain.settings.model.Authorizer
@@ -124,24 +123,6 @@ fun InstallExtendedMenuContent(
                             menuItem = ExtendedMenuItemEntity(
                                 nameResourceId = R.string.config_target_user,
                                 icon = AppIcons.InstallUser,
-                                action = null
-                            )
-                        )
-                    )
-                }
-
-                if (
-                    AppConfig.isInternetAccessEnabled &&
-                    selectedPrimaryEntity is AppEntity.BaseEntity &&
-                    uiState.viewSettings.virusTotalApiKey.isNotBlank()
-                ) {
-                    add(
-                        ExtendedMenuEntity(
-                            action = InstallExtendedMenuAction.VirusTotalCheck,
-                            menuItem = ExtendedMenuItemEntity(
-                                nameResourceId = R.string.virus_total_install_check,
-                                descriptionResourceId = R.string.virus_total_install_check_desc,
-                                icon = null,
                                 action = null
                             )
                         )

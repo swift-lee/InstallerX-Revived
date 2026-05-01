@@ -53,9 +53,11 @@ import com.rosan.installer.domain.engine.model.sortedBest
 import com.rosan.installer.domain.engine.model.sourcePath
 import com.rosan.installer.domain.engine.usecase.AnalyzeInstallStateUseCase
 import com.rosan.installer.domain.settings.model.Authorizer
+import com.rosan.installer.domain.virustotal.model.VirusTotalCheckResult
 import com.rosan.installer.ui.icons.AppIcons
 import com.rosan.installer.ui.page.main.installer.InstallerViewAction
 import com.rosan.installer.ui.page.main.installer.InstallerViewModel
+import com.rosan.installer.ui.page.main.installer.components.VirusTotalResultCard
 import com.rosan.installer.ui.page.main.installer.dialog.inner.InstallNoticeResources
 import com.rosan.installer.ui.page.main.installer.mapper.InstallStateUiMapper
 import com.rosan.installer.ui.page.miuix.installer.components.AdaptiveInfoRow
@@ -233,6 +235,12 @@ fun InstallPrepareContent(
             )
         }
         item { Spacer(modifier = Modifier.height(4.dp)) }
+        item {
+            VirusTotalResultCard(
+                result = uiState.virusTotalAnalysisResult,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+            )
+        }
         item {
             MiuixInfoChipGroup(
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
@@ -596,7 +604,12 @@ fun InstallPrepareContent(
                     },
                     enabled = canInstall,
                     text = stringResource(buttonTextId),
-                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                    colors = if (uiState.virusTotalAnalysisResult is VirusTotalCheckResult.Risky) {
+                        ButtonDefaults.textButtonColors(
+                            color = Color(0xFFE60000),
+                            textColor = Color.White
+                        )
+                    } else ButtonDefaults.textButtonColorsPrimary(),
                     modifier = Modifier.weight(1f),
                     interactionSource = interactionSource
                 )

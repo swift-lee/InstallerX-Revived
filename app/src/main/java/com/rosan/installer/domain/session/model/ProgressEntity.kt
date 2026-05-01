@@ -16,6 +16,7 @@ sealed class ProgressEntity {
     data class InstallPreparing(val progress: Float) : ProgressEntity()
 
     data object InstallAnalysing : ProgressEntity()
+    data object VirusTotalAnalysing : ProgressEntity()
     data object InstallAnalysedFailed : ProgressEntity()
     data class InstallAnalysedUnsupported(val reason: String) : ProgressEntity()
     data object InstallAnalysedSuccess : ProgressEntity()
